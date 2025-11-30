@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2048 完美對齊版</title>
+    <title>2048</title>
+    
+    <!-- 
+      === APP 圖示設定區 (SVG Data URI) === 
+      這裡使用程式碼直接畫出一個 2048 的黃色方塊圖示，
+      這樣您不需要準備任何圖片檔案，直接複製貼上就會有圖示！
+    -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='15%25' fill='%23edc22e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='150' fill='white'%3E2048%3C/text%3E%3C/svg%3E">
+    
+    <!-- 針對 iOS (iPad/iPhone) 的桌面圖示設定 -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='15%25' fill='%23edc22e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='150' fill='white'%3E2048%3C/text%3E%3C/svg%3E">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
@@ -46,7 +57,7 @@
             width: calc(25% - 15px);
             height: calc(25% - 15px);
             border-radius: 4px;
-            /* left 和 top 將由 JS 直接設定，提高相容性 */
+            /* left 和 top 將由 JS 直接設定 */
         }
 
         /* 背景的空格子 */
@@ -259,9 +270,6 @@
         }
 
         function setTilePosition(el, r, c) {
-            // 使用更兼容的公式，直接設定 left 和 top，不依賴 CSS 變數
-            // 公式：12px (起始間隙) + index * (25% - 3px)
-            // (25% - 3px) 是指 方塊寬度(25%-15px) + 間隙(12px)
             el.style.left = `calc(12px + ${c} * (25% - 3px))`;
             el.style.top = `calc(12px + ${r} * (25% - 3px))`;
         }
