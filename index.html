@@ -5,14 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2048</title>
     
-    <!-- 
-      === APP 圖示設定區 (SVG Data URI) === 
-      這裡使用程式碼直接畫出一個 2048 的黃色方塊圖示，
-      這樣您不需要準備任何圖片檔案，直接複製貼上就會有圖示！
-    -->
+    <!-- APP 圖示 -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='15%25' fill='%23edc22e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='150' fill='white'%3E2048%3C/text%3E%3C/svg%3E">
-    
-    <!-- 針對 iOS (iPad/iPhone) 的桌面圖示設定 -->
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='15%25' fill='%23edc22e'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='150' fill='white'%3E2048%3C/text%3E%3C/svg%3E">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,9 +15,10 @@
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            touch-action: none; 
+            touch-action: pan-y; 
             background-color: #f5f5f4;
-            overscroll-behavior: none;
+            overflow-y: auto; 
+            overflow-x: hidden;
         }
 
         /* 遊戲盤面容器 */
@@ -50,14 +45,10 @@
         /* 通用方塊樣式 */
         .grid-cell, .tile {
             position: absolute;
-            /* 寬度計算：(100% - 5個12px間隙) / 4 
-               = (100% - 60px) / 4 
-               = 25% - 15px
-            */
+            /* 寬度計算：(100% - 5個12px間隙) / 4 */
             width: calc(25% - 15px);
             height: calc(25% - 15px);
             border-radius: 4px;
-            /* left 和 top 將由 JS 直接設定 */
         }
 
         /* 背景的空格子 */
@@ -74,7 +65,6 @@
             font-weight: bold;
             font-size: 2.5rem;
             line-height: 1;
-            /* 對位置進行平滑過渡 */
             transition: left 0.1s ease-in-out, top 0.1s ease-in-out; 
             z-index: 10; 
         }
@@ -83,7 +73,7 @@
             .tile { font-size: 2rem; }
         }
 
-        /* 顏色主題 */
+        /* --- 顏色主題 (包含 4096+) --- */
         .tile-2 { background: #eee4da; color: #776e65; }
         .tile-4 { background: #ede0c8; color: #776e65; }
         .tile-8 { background: #f2b179; color: #f9f6f2; }
@@ -95,6 +85,22 @@
         .tile-512 { background: #edc850; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 15px #edc850; }
         .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 20px #edc53f; }
         .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 25px #edc22e; border: 2px solid #fff; }
+        
+        /* 新增 4096 與更高分的樣式 */
+        .tile-4096 { 
+            background: #3c3a32; /* 深鐵灰色 */
+            color: #f9f6f2; 
+            font-size: 1.5rem; 
+            box-shadow: 0 0 30px #3c3a32; 
+            border: 2px solid #fff; 
+        }
+        .tile-8192 { 
+            background: #3c3a32; 
+            color: #f9f6f2; 
+            font-size: 1.5rem; 
+            box-shadow: 0 0 35px #3c3a32; 
+            border: 2px solid #edc22e; /* 金色邊框 */
+        }
 
         /* 動畫 */
         .tile-new { animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
@@ -109,50 +115,50 @@
         .hidden-custom { display: none !important; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 select-none overflow-hidden">
+<body class="flex flex-col items-center min-h-screen p-4 select-none md:justify-center">
 
-    <div class="w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12">
+    <div class="w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-4">
         
         <!-- 左側資訊區 -->
-        <div class="w-full md:w-72 flex flex-col gap-4 mb-6 md:mb-0">
+        <div class="w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
             <div class="flex justify-between items-center">
-                <h1 class="text-6xl font-bold text-stone-700">2048</h1>
+                <h1 class="text-4xl md:text-6xl font-bold text-stone-700">2048</h1>
                 <button onclick="toggleRules()" class="md:hidden p-2 bg-blue-100 rounded-full text-blue-600">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                 </button>
             </div>
             
             <div class="flex gap-3">
-                <div class="bg-[#bbada0] p-3 rounded text-center flex-1">
+                <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
                     <div class="text-[#eee4da] text-xs font-bold uppercase">SCORE</div>
-                    <div id="score" class="text-white text-2xl font-bold">0</div>
+                    <div id="score" class="text-white text-xl md:text-2xl font-bold">0</div>
                 </div>
-                <div class="bg-[#bbada0] p-3 rounded text-center flex-1">
+                <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
                     <div class="text-[#eee4da] text-xs font-bold uppercase">BEST</div>
-                    <div id="best-score" class="text-white text-2xl font-bold">0</div>
+                    <div id="best-score" class="text-white text-xl md:text-2xl font-bold">0</div>
                 </div>
             </div>
 
-            <button onclick="restartGame()" class="bg-[#8f7a66] hover:bg-[#806c59] text-white text-lg font-bold py-3 rounded active:scale-95 transition-transform shadow-md">
+            <button onclick="restartGame()" class="bg-[#8f7a66] hover:bg-[#806c59] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md">
                 重新開始
             </button>
             <button onclick="toggleRules()" class="hidden md:block bg-blue-500 hover:bg-blue-600 text-white text-lg font-bold py-2 rounded">
                 遊戲說明
             </button>
 
-            <div class="mt-2 bg-white p-4 rounded shadow-sm border border-stone-200">
+            <!-- 排行榜 -->
+            <div class="mt-1 md:mt-2 bg-white p-3 md:p-4 rounded shadow-sm border border-stone-200">
                 <div class="flex items-center gap-2 mb-2 text-stone-600 font-bold border-b pb-2 text-sm uppercase tracking-wide">
                     🏆 排行榜
                 </div>
-                <ul id="leaderboard" class="space-y-1 text-stone-500 text-sm">
+                <ul id="leaderboard" class="space-y-1 text-stone-500 text-sm max-h-[100px] md:max-h-none overflow-y-auto">
                     <li>尚無紀錄</li>
                 </ul>
             </div>
         </div>
 
         <!-- 右側遊戲區 -->
-        <div class="relative">
-            <!-- 遊戲容器 -->
+        <div class="relative flex-shrink-0 flex flex-col items-center">
             <div id="game-container" 
                  class="relative shadow-lg" 
                  style="width: 90vw; height: 90vw; max-width: 500px; max-height: 500px;">
@@ -166,7 +172,7 @@
 
                 <!-- 狀態訊息 -->
                 <div id="message-modal" class="hidden-custom absolute inset-0 z-50 flex flex-col items-center justify-center bg-[rgba(238,228,218,0.73)] text-[#776e65] rounded-md backdrop-blur-sm transition-opacity">
-                    <h2 id="message-title" class="text-5xl font-bold mb-4">Game Over!</h2>
+                    <h2 id="message-title" class="text-4xl md:text-5xl font-bold mb-4">Game Over!</h2>
                     <p id="message-score" class="text-xl font-bold mb-6">Score: 0</p>
                     <button onclick="restartGame()" class="bg-[#8f7a66] text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
                         再玩一次
@@ -177,7 +183,7 @@
                 </div>
             </div>
             <div class="text-center mt-4 text-stone-400 font-bold text-sm">
-                使用鍵盤方向鍵或在螢幕滑動
+                可使用鍵盤方向鍵或在螢幕滑動
             </div>
         </div>
     </div>
