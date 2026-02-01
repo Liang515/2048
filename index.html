@@ -28,6 +28,7 @@
             -webkit-user-select: none;
         }
 
+        /* 遊戲盤面容器 */
         .game-board-container {
             position: relative;
             width: 100%;
@@ -38,6 +39,7 @@
             overflow: hidden;
         }
 
+        /* 層級容器 */
         #background-layer, #tile-layer {
             position: absolute;
             top: 0;
@@ -47,18 +49,22 @@
             pointer-events: none;
         }
 
+        /* 通用方塊樣式 */
         .grid-cell, .tile {
             position: absolute;
+            /* 寬度計算：(100% - 5個12px間隙) / 4 */
             width: calc(25% - 15px);
             height: calc(25% - 15px);
             border-radius: 4px;
         }
 
+        /* 背景的空格子 */
         .grid-cell {
             background-color: #cdc1b4; 
             z-index: 1; 
         }
 
+        /* 數字方塊 */
         .tile {
             display: flex;
             justify-content: center;
@@ -74,7 +80,7 @@
             .tile { font-size: 2rem; }
         }
 
-        /* 顏色主題 */
+        /* --- 顏色主題 --- */
         .tile-2 { background: #eee4da; color: #776e65; }
         .tile-4 { background: #ede0c8; color: #776e65; }
         .tile-8 { background: #f2b179; color: #f9f6f2; }
@@ -87,7 +93,9 @@
         .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 20px #edc53f; }
         .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 25px #edc22e; border: 2px solid #fff; }
         .tile-4096 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 30px #3c3a32; border: 2px solid #fff; }
+        .tile-8192 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 35px #3c3a32; border: 2px solid #edc22e; }
 
+        /* 動畫 */
         .tile-new { animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
         .tile-merged { z-index: 20; animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
 
@@ -99,6 +107,7 @@
 
         .hidden-custom { display: none !important; }
 
+        /* --- 手機橫向模式 (Landscape) 優化 --- */
         @media (max-height: 600px) and (orientation: landscape) {
             body { padding: 0.5rem !important; align-items: center !important; }
             .main-layout { flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 1.5rem !important; }
@@ -112,10 +121,11 @@
         }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen p-4 md:justify-center">
+<body class="flex flex-col items-center min-h-screen p-4 select-none md:justify-center">
 
     <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-4">
         
+        <!-- 左側資訊區 -->
         <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <h1 class="text-4xl md:text-6xl font-bold text-stone-700">2048</h1>
@@ -135,12 +145,14 @@
                 </div>
             </div>
 
+            <!-- 按鈕區：重新開始 & 上一步 -->
             <div class="flex gap-2">
                 <button onclick="restartGame()" class="flex-1 bg-[#8f7a66] hover:bg-[#806c59] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                     重來
                 </button>
-                <button id="undo-btn" onclick="undo()" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
+                <!-- 修正配色：改為溫暖的橘紅色 (#f67c5f)，與遊戲方塊 32 的顏色一致，不突兀且好辨識 -->
+                <button id="undo-btn" onclick="undo()" class="flex-1 bg-[#f67c5f] hover:bg-[#e06547] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
                     上一步
                 </button>
@@ -150,6 +162,7 @@
                 遊戲說明
             </button>
 
+            <!-- 排行榜 -->
             <div class="leaderboard-container mt-1 md:mt-2 bg-white p-3 md:p-4 rounded shadow-sm border border-stone-200">
                 <div class="flex items-center gap-2 mb-2 text-stone-600 font-bold border-b pb-2 text-sm uppercase tracking-wide">
                     🏆 排行榜
@@ -160,6 +173,7 @@
             </div>
         </div>
 
+        <!-- 右側遊戲區 -->
         <div class="relative flex-shrink-0 flex flex-col items-center">
             <div id="game-container" 
                  class="relative shadow-lg" 
@@ -170,11 +184,12 @@
                     <div id="tile-layer"></div>
                 </div>
 
+                <!-- 狀態訊息 -->
                 <div id="message-modal" class="hidden-custom absolute inset-0 z-50 flex flex-col items-center justify-center bg-[rgba(238,228,218,0.73)] text-[#776e65] rounded-md backdrop-blur-sm transition-opacity">
                     <h2 id="message-title" class="text-4xl md:text-5xl font-bold mb-4">Game Over!</h2>
                     <p id="message-score" class="text-xl font-bold mb-6">Score: 0</p>
                     <div class="flex gap-3">
-                        <button onclick="undo()" class="bg-green-600 text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
+                        <button onclick="undo()" class="bg-[#f67c5f] hover:bg-[#e06547] text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
                             悔棋
                         </button>
                         <button onclick="restartGame()" class="bg-[#8f7a66] text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
@@ -192,6 +207,7 @@
         </div>
     </div>
 
+    <!-- 規則 -->
     <div id="rules-modal" class="hidden-custom fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
         <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
             <h2 class="text-2xl font-bold text-stone-700 mb-4 border-b pb-2">如何遊玩</h2>
@@ -215,7 +231,7 @@
         let hasContinued = false;
         let isAnimating = false;
         let idCounter = 0;
-        let hasSavedThisRun = false; // 防止同一場遊戲重複存檔
+        let hasSavedThisRun = false; 
         
         let historyStack = [];
         
@@ -270,8 +286,18 @@
             addRandomTile();
         }
 
+        function saveState() {
+            const state = {
+                score: score,
+                isGameOver: isGameOver,
+                isGameWon: isGameWon,
+                hasContinued: hasContinued,
+                tiles: tiles.map(t => ({val: t.val, r: t.r, c: t.c})) 
+            };
+            historyStack.push(state);
+        }
+
         function undo() {
-            // 修正：正在動畫時不允許悔棋，避免 DOM 同步出錯
             if (isAnimating || historyStack.length === 0) return;
             
             const prevState = historyStack.pop();
@@ -373,10 +399,15 @@
                     if(checkR < 0 || checkR >= 4 || checkC < 0 || checkC >= 4) break;
                     let obstacle = grid[checkR][checkC];
                     if(!obstacle) {
-                        nextR = checkR; nextC = checkC;
+                        nextR = checkR;
+                        nextC = checkC;
                     } else if (obstacle.val === tile.val && !mergedIds.has(obstacle.id) && !obstacle.isMerged) {
-                        nextR = checkR; nextC = checkC; break;
-                    } else { break; }
+                        nextR = checkR;
+                        nextC = checkC;
+                        break;
+                    } else {
+                        break;
+                    }
                 }
 
                 if(nextR !== r || nextC !== c) {
@@ -394,6 +425,7 @@
                         mergedIds.add(tile.id);
                         mergedIds.add(target.id);
                         tilesToAdd.push({val: newVal, r: nextR, c: nextC});
+                        
                         grid[nextR][nextC] = {val: newVal, id: 'temp-'+Math.random(), isMerged: true}; 
                     } else {
                         setTilePosition(tile.el, nextR, nextC);
@@ -451,7 +483,6 @@
             saveHighScore(score);
         }
 
-        // 修正：統一處理訊息顯示與存檔邏輯
         function showMessage(title, s, isWin) {
             messageTitle.innerText = title;
             messageScore.innerText = "得分: " + s;
@@ -459,7 +490,6 @@
             if(isWin) btnContinue.classList.remove('hidden-custom');
             else btnContinue.classList.add('hidden-custom');
 
-            // 確保這場遊戲的分數只會存入排行榜一次
             if (!hasSavedThisRun) {
                 updateLeaderboardList(s);
                 hasSavedThisRun = true;
@@ -503,7 +533,6 @@
             }
         }
         function updateLeaderboardList(finalScore) {
-            if (finalScore === 0) return; // 0分不列入紀錄
             let list = JSON.parse(localStorage.getItem('2048_list')||'[]');
             list.push({score: finalScore, date: new Date().toLocaleDateString()});
             list.sort((a,b) => b.score - a.score);
