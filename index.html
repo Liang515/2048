@@ -1,562 +1,533 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <link rel="icon" type="image/png" href="/2048-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/2048.svg" />
-    <link rel="shortcut icon" href="/2048.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="2048" />
-    <link rel="manifest" href="/site.webmanifest" />
-    
-    <title>2048</title>
+    <link rel="icon" type="image/png" href="/2048-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/2048.svg" />
+    <link rel="shortcut icon" href="/2048.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="2048" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <title>2048</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            touch-action: pan-y; 
-            background-color: #f5f5f4;
-            overflow-y: auto; 
-            overflow-x: hidden;
-            /* 防止長按選取文字 */
-            user-select: none;
-            -webkit-user-select: none;
-        }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            touch-action: pan-y; 
+            background-color: #f5f5f4;
+            overflow-y: auto; 
+            overflow-x: hidden;
+            /* 防止長按選取文字 */
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-        /* 遊戲盤面容器 */
-        .game-board-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background-color: #bbada0; 
-            border-radius: 6px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
+        .game-board-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #bbada0; 
+            border-radius: 6px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
 
-        /* 層級容器 */
-        #background-layer, #tile-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
+        #background-layer, #tile-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
 
-        /* 通用方塊樣式 */
-        .grid-cell, .tile {
-            position: absolute;
-            /* 寬度計算：(100% - 5個12px間隙) / 4 */
-            width: calc(25% - 15px);
-            height: calc(25% - 15px);
-            border-radius: 4px;
-        }
+        .grid-cell, .tile {
+            position: absolute;
+            width: calc(25% - 15px);
+            height: calc(25% - 15px);
+            border-radius: 4px;
+        }
 
-        /* 背景的空格子 */
-        .grid-cell {
-            background-color: #cdc1b4; 
-            z-index: 1; 
-        }
+        .grid-cell {
+            background-color: #cdc1b4; 
+            z-index: 1; 
+        }
 
-        /* 數字方塊 */
-        .tile {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 2.5rem;
-            line-height: 1;
-            transition: left 0.1s ease-in-out, top 0.1s ease-in-out; 
-            z-index: 10; 
-        }
+        .tile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 2.5rem;
+            line-height: 1;
+            transition: left 0.1s ease-in-out, top 0.1s ease-in-out; 
+            z-index: 10; 
+        }
 
-        @media (max-width: 500px) {
-            .tile { font-size: 2rem; }
-        }
+        @media (max-width: 500px) {
+            .tile { font-size: 2rem; }
+        }
 
-        /* --- 顏色主題 --- */
-        .tile-2 { background: #eee4da; color: #776e65; }
-        .tile-4 { background: #ede0c8; color: #776e65; }
-        .tile-8 { background: #f2b179; color: #f9f6f2; }
-        .tile-16 { background: #f59563; color: #f9f6f2; }
-        .tile-32 { background: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 2rem; }
-        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 10px #edcc61; }
-        .tile-512 { background: #edc850; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 15px #edc850; }
-        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 20px #edc53f; }
-        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 25px #edc22e; border: 2px solid #fff; }
-        .tile-4096 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 30px #3c3a32; border: 2px solid #fff; }
-        .tile-8192 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 35px #3c3a32; border: 2px solid #edc22e; }
+        /* 顏色主題 */
+        .tile-2 { background: #eee4da; color: #776e65; }
+        .tile-4 { background: #ede0c8; color: #776e65; }
+        .tile-8 { background: #f2b179; color: #f9f6f2; }
+        .tile-16 { background: #f59563; color: #f9f6f2; }
+        .tile-32 { background: #f67c5f; color: #f9f6f2; }
+        .tile-64 { background: #f65e3b; color: #f9f6f2; }
+        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 2rem; }
+        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 10px #edcc61; }
+        .tile-512 { background: #edc850; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 15px #edc850; }
+        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 20px #edc53f; }
+        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 25px #edc22e; border: 2px solid #fff; }
+        .tile-4096 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 30px #3c3a32; border: 2px solid #fff; }
 
-        /* 動畫 */
-        .tile-new { animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
-        .tile-merged { z-index: 20; animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
+        .tile-new { animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
+        .tile-merged { z-index: 20; animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
 
-        @keyframes pop {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
 
-        .hidden-custom { display: none !important; }
+        .hidden-custom { display: none !important; }
 
-        /* --- 手機橫向模式 (Landscape) 優化 --- */
-        @media (max-height: 600px) and (orientation: landscape) {
-            body { padding: 0.5rem !important; align-items: center !important; }
-            .main-layout { flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 1.5rem !important; }
-            .info-panel { width: 160px !important; gap: 0.5rem !important; }
-            .info-panel h1 { font-size: 2rem !important; line-height: 1 !important; }
-            .info-panel button { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; font-size: 1rem !important; }
-            .leaderboard-container { margin-top: 0.25rem !important; padding: 0.5rem !important; }
-            #leaderboard { max-height: 50px !important; }
-            #game-container { width: 85vh !important; height: 85vh !important; max-width: 500px; max-height: 500px; }
-            .mobile-hint { display: none !important; }
-        }
-    </style>
+        @media (max-height: 600px) and (orientation: landscape) {
+            body { padding: 0.5rem !important; align-items: center !important; }
+            .main-layout { flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 1.5rem !important; }
+            .info-panel { width: 160px !important; gap: 0.5rem !important; }
+            .info-panel h1 { font-size: 2rem !important; line-height: 1 !important; }
+            .info-panel button { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; font-size: 1rem !important; }
+            .leaderboard-container { margin-top: 0.25rem !important; padding: 0.5rem !important; }
+            #leaderboard { max-height: 50px !important; }
+            #game-container { width: 85vh !important; height: 85vh !important; max-width: 500px; max-height: 500px; }
+            .mobile-hint { display: none !important; }
+        }
+    </style>
 </head>
-<body class="flex flex-col items-center min-h-screen p-4 select-none md:justify-center">
+<body class="flex flex-col items-center min-h-screen p-4 md:justify-center">
 
-    <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-4">
-        
-        <!-- 左側資訊區 -->
-        <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
-            <div class="flex justify-between items-center">
-                <h1 class="text-4xl md:text-6xl font-bold text-stone-700">2048</h1>
-                <button onclick="toggleRules()" class="md:hidden p-2 bg-blue-100 rounded-full text-blue-600">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                </button>
-            </div>
-            
-            <div class="flex gap-3">
-                <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
-                    <div class="text-[#eee4da] text-xs font-bold uppercase">SCORE</div>
-                    <div id="score" class="text-white text-xl md:text-2xl font-bold">0</div>
-                </div>
-                <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
-                    <div class="text-[#eee4da] text-xs font-bold uppercase">BEST</div>
-                    <div id="best-score" class="text-white text-xl md:text-2xl font-bold">0</div>
-                </div>
-            </div>
+    <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-4">
+        
+        <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
+            <div class="flex justify-between items-center">
+                <h1 class="text-4xl md:text-6xl font-bold text-stone-700">2048</h1>
+                <button onclick="toggleRules()" class="md:hidden p-2 bg-blue-100 rounded-full text-blue-600">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                </button>
+            </div>
+            
+            <div class="flex gap-3">
+                <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
+                    <div class="text-[#eee4da] text-xs font-bold uppercase">SCORE</div>
+                    <div id="score" class="text-white text-xl md:text-2xl font-bold">0</div>
+                </div>
+                <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
+                    <div class="text-[#eee4da] text-xs font-bold uppercase">BEST</div>
+                    <div id="best-score" class="text-white text-xl md:text-2xl font-bold">0</div>
+                </div>
+            </div>
 
-            <!-- 按鈕區：重新開始 & 上一步 -->
-            <div class="flex gap-2">
-                <button onclick="restartGame()" class="flex-1 bg-[#8f7a66] hover:bg-[#806c59] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                    重來
-                </button>
-                <!-- 修正配色：改為溫暖的橘紅色 (#f67c5f)，與遊戲方塊 32 的顏色一致，不突兀且好辨識 -->
-                <button id="undo-btn" onclick="undo()" class="flex-1 bg-[#f67c5f] hover:bg-[#e06547] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
-                    上一步
-                </button>
-            </div>
-            
-            <button onclick="toggleRules()" class="hidden md:block bg-blue-500 hover:bg-blue-600 text-white text-lg font-bold py-2 rounded">
-                遊戲說明
-            </button>
+            <div class="flex gap-2">
+                <button onclick="restartGame()" class="flex-1 bg-[#8f7a66] hover:bg-[#806c59] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    重來
+                </button>
+                <button id="undo-btn" onclick="undo()" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+                    上一步
+                </button>
+            </div>
+            
+            <button onclick="toggleRules()" class="hidden md:block bg-blue-500 hover:bg-blue-600 text-white text-lg font-bold py-2 rounded">
+                遊戲說明
+            </button>
 
-            <!-- 排行榜 -->
-            <div class="leaderboard-container mt-1 md:mt-2 bg-white p-3 md:p-4 rounded shadow-sm border border-stone-200">
-                <div class="flex items-center gap-2 mb-2 text-stone-600 font-bold border-b pb-2 text-sm uppercase tracking-wide">
-                    🏆 排行榜
-                </div>
-                <ul id="leaderboard" class="space-y-1 text-stone-500 text-sm max-h-[100px] md:max-h-none overflow-y-auto">
-                    <li>尚無紀錄</li>
-                </ul>
-            </div>
-        </div>
+            <div class="leaderboard-container mt-1 md:mt-2 bg-white p-3 md:p-4 rounded shadow-sm border border-stone-200">
+                <div class="flex items-center gap-2 mb-2 text-stone-600 font-bold border-b pb-2 text-sm uppercase tracking-wide">
+                    🏆 排行榜
+                </div>
+                <ul id="leaderboard" class="space-y-1 text-stone-500 text-sm max-h-[100px] md:max-h-none overflow-y-auto">
+                    <li>尚無紀錄</li>
+                </ul>
+            </div>
+        </div>
 
-        <!-- 右側遊戲區 -->
-        <div class="relative flex-shrink-0 flex flex-col items-center">
-            <div id="game-container" 
-                 class="relative shadow-lg" 
-                 style="width: min(90vw, 65vh, 500px); height: min(90vw, 65vh, 500px);">
-                
-                <div class="game-board-container" id="board-container">
-                    <div id="background-layer"></div>
-                    <div id="tile-layer"></div>
-                </div>
+        <div class="relative flex-shrink-0 flex flex-col items-center">
+            <div id="game-container" 
+                 class="relative shadow-lg" 
+                 style="width: min(90vw, 65vh, 500px); height: min(90vw, 65vh, 500px);">
+                
+                <div class="game-board-container" id="board-container">
+                    <div id="background-layer"></div>
+                    <div id="tile-layer"></div>
+                </div>
 
-                <!-- 狀態訊息 -->
-                <div id="message-modal" class="hidden-custom absolute inset-0 z-50 flex flex-col items-center justify-center bg-[rgba(238,228,218,0.73)] text-[#776e65] rounded-md backdrop-blur-sm transition-opacity">
-                    <h2 id="message-title" class="text-4xl md:text-5xl font-bold mb-4">Game Over!</h2>
-                    <p id="message-score" class="text-xl font-bold mb-6">Score: 0</p>
-                    <div class="flex gap-3">
-                        <button onclick="undo()" class="bg-[#f67c5f] hover:bg-[#e06547] text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
-                            悔棋
-                        </button>
-                        <button onclick="restartGame()" class="bg-[#8f7a66] text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
-                            重來
-                        </button>
-                    </div>
-                    <button id="btn-continue" onclick="continueGame()" class="hidden-custom mt-4 text-[#776e65] font-bold underline">
-                        繼續挑戰
-                    </button>
-                </div>
-            </div>
-            <div class="mobile-hint text-center mt-4 text-stone-400 font-bold text-sm">
-                可使用鍵盤方向鍵或在螢幕滑動
-            </div>
-        </div>
-    </div>
+                <div id="message-modal" class="hidden-custom absolute inset-0 z-50 flex flex-col items-center justify-center bg-[rgba(238,228,218,0.73)] text-[#776e65] rounded-md backdrop-blur-sm transition-opacity">
+                    <h2 id="message-title" class="text-4xl md:text-5xl font-bold mb-4">Game Over!</h2>
+                    <p id="message-score" class="text-xl font-bold mb-6">Score: 0</p>
+                    <div class="flex gap-3">
+                        <button onclick="undo()" class="bg-green-600 text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
+                            悔棋
+                        </button>
+                        <button onclick="restartGame()" class="bg-[#8f7a66] text-white px-6 py-3 rounded font-bold text-xl shadow-lg hover:scale-105 transition-transform">
+                            重來
+                        </button>
+                    </div>
+                    <button id="btn-continue" onclick="continueGame()" class="hidden-custom mt-4 text-[#776e65] font-bold underline">
+                        繼續挑戰
+                    </button>
+                </div>
+            </div>
+            <div class="mobile-hint text-center mt-4 text-stone-400 font-bold text-sm">
+                可使用鍵盤方向鍵或在螢幕滑動
+            </div>
+        </div>
+    </div>
 
-    <!-- 規則 -->
-    <div id="rules-modal" class="hidden-custom fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
-            <h2 class="text-2xl font-bold text-stone-700 mb-4 border-b pb-2">如何遊玩</h2>
-            <ul class="list-decimal pl-5 space-y-2 text-stone-600 mb-6 text-lg">
-                <li><strong>滑動</strong>：上下左右滑動，所有方塊會移動。</li>
-                <li><strong>合併</strong>：兩個相同數字撞在一起會相加。</li>
-                <li><strong>勝利</strong>：組出 <strong>2048</strong> 獲得勝利！</li>
-            </ul>
-            <button onclick="toggleRules()" class="w-full bg-[#8f7a66] text-white py-3 rounded font-bold text-lg">
-                我知道了
-            </button>
-        </div>
-    </div>
+    <div id="rules-modal" class="hidden-custom fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
+            <h2 class="text-2xl font-bold text-stone-700 mb-4 border-b pb-2">如何遊玩</h2>
+            <ul class="list-decimal pl-5 space-y-2 text-stone-600 mb-6 text-lg">
+                <li><strong>滑動</strong>：上下左右滑動，所有方塊會移動。</li>
+                <li><strong>合併</strong>：兩個相同數字撞在一起會相加。</li>
+                <li><strong>勝利</strong>：組出 <strong>2048</strong> 獲得勝利！</li>
+            </ul>
+            <button onclick="toggleRules()" class="w-full bg-[#8f7a66] text-white py-3 rounded font-bold text-lg">
+                我知道了
+            </button>
+        </div>
+    </div>
 
-    <script>
-        const GRID_SIZE = 4;
-        let tiles = []; 
-        let score = 0;
-        let isGameOver = false;
-        let isGameWon = false;
-        let hasContinued = false;
-        let isAnimating = false;
-        let idCounter = 0;
-        let hasSavedThisRun = false; 
-        
-        let historyStack = [];
-        
-        const backgroundLayer = document.getElementById('background-layer');
-        const tileLayer = document.getElementById('tile-layer');
-        const scoreEl = document.getElementById('score');
-        const bestScoreEl = document.getElementById('best-score');
-        const messageModal = document.getElementById('message-modal');
-        const messageTitle = document.getElementById('message-title');
-        const messageScore = document.getElementById('message-score');
-        const btnContinue = document.getElementById('btn-continue');
-        const leaderboardEl = document.getElementById('leaderboard');
+    <script>
+        const GRID_SIZE = 4;
+        let tiles = []; 
+        let score = 0;
+        let isGameOver = false;
+        let isGameWon = false;
+        let hasContinued = false;
+        let isAnimating = false;
+        let idCounter = 0;
+        let hasSavedThisRun = false; // 防止同一場遊戲重複存檔
+        
+        let historyStack = [];
+        
+        const backgroundLayer = document.getElementById('background-layer');
+        const tileLayer = document.getElementById('tile-layer');
+        const scoreEl = document.getElementById('score');
+        const bestScoreEl = document.getElementById('best-score');
+        const messageModal = document.getElementById('message-modal');
+        const messageTitle = document.getElementById('message-title');
+        const messageScore = document.getElementById('message-score');
+        const btnContinue = document.getElementById('btn-continue');
+        const leaderboardEl = document.getElementById('leaderboard');
 
-        initBoardBackground();
-        loadHighScores();
-        restartGame();
+        initBoardBackground();
+        loadHighScores();
+        restartGame();
 
-        document.addEventListener('keydown', handleKey);
-        const gameContainer = document.getElementById('game-container');
-        gameContainer.addEventListener('touchstart', handleTouchStart, {passive: false});
-        gameContainer.addEventListener('touchend', handleTouchEnd, {passive: false});
-        gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), {passive: false});
+        document.addEventListener('keydown', handleKey);
+        const gameContainer = document.getElementById('game-container');
+        gameContainer.addEventListener('touchstart', handleTouchStart, {passive: false});
+        gameContainer.addEventListener('touchend', handleTouchEnd, {passive: false});
+        gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), {passive: false});
 
-        function initBoardBackground() {
-            backgroundLayer.innerHTML = '';
-            for(let r = 0; r < GRID_SIZE; r++) {
-                for(let c = 0; c < GRID_SIZE; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell';
-                    setTilePosition(cell, r, c);
-                    backgroundLayer.appendChild(cell);
-                }
-            }
-        }
+        function initBoardBackground() {
+            backgroundLayer.innerHTML = '';
+            for(let r = 0; r < GRID_SIZE; r++) {
+                for(let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    setTilePosition(cell, r, c);
+                    backgroundLayer.appendChild(cell);
+                }
+            }
+        }
 
-        function restartGame() {
-            tiles = [];
-            score = 0;
-            isGameOver = false;
-            isGameWon = false;
-            hasContinued = false;
-            isAnimating = false;
-            hasSavedThisRun = false; 
-            historyStack = []; 
-            
-            updateScore(0);
-            messageModal.classList.add('hidden-custom');
-            btnContinue.classList.add('hidden-custom');
-            tileLayer.innerHTML = '';
-            
-            addRandomTile();
-            addRandomTile();
-        }
+        function restartGame() {
+            tiles = [];
+            score = 0;
+            isGameOver = false;
+            isGameWon = false;
+            hasContinued = false;
+            isAnimating = false;
+            hasSavedThisRun = false; 
+            historyStack = []; 
+            
+            updateScore(0);
+            messageModal.classList.add('hidden-custom');
+            btnContinue.classList.add('hidden-custom');
+            tileLayer.innerHTML = '';
+            
+            addRandomTile();
+            addRandomTile();
+        }
 
-        function saveState() {
-            const state = {
-                score: score,
-                isGameOver: isGameOver,
-                isGameWon: isGameWon,
-                hasContinued: hasContinued,
-                tiles: tiles.map(t => ({val: t.val, r: t.r, c: t.c})) 
-            };
-            historyStack.push(state);
-        }
+        function undo() {
+            // 修正：正在動畫時不允許悔棋，避免 DOM 同步出錯
+            if (isAnimating || historyStack.length === 0) return;
+            
+            const prevState = historyStack.pop();
+            
+            score = prevState.score;
+            isGameOver = prevState.isGameOver;
+            isGameWon = prevState.isGameWon;
+            hasContinued = prevState.hasContinued;
+            hasSavedThisRun = false; 
+            
+            updateScore(score); 
+            messageModal.classList.add('hidden-custom');
+            
+            tileLayer.innerHTML = '';
+            tiles = [];
+            prevState.tiles.forEach(tData => {
+                createTile(tData.val, tData.r, tData.c, false);
+            });
+        }
 
-        function undo() {
-            if (isAnimating || historyStack.length === 0) return;
-            
-            const prevState = historyStack.pop();
-            
-            score = prevState.score;
-            isGameOver = prevState.isGameOver;
-            isGameWon = prevState.isGameWon;
-            hasContinued = prevState.hasContinued;
-            hasSavedThisRun = false; 
-            
-            updateScore(score); 
-            messageModal.classList.add('hidden-custom');
-            
-            tileLayer.innerHTML = '';
-            tiles = [];
-            prevState.tiles.forEach(tData => {
-                createTile(tData.val, tData.r, tData.c, false);
-            });
-        }
+        function createTile(val, r, c, isNew = false) {
+            const id = `tile-${++idCounter}`;
+            const el = document.createElement('div');
+            el.className = `tile tile-${val} ${isNew ? 'tile-new' : ''}`;
+            el.textContent = val;
+            setTilePosition(el, r, c);
+            tileLayer.appendChild(el);
+            const tile = {id, val, r, c, el};
+            tiles.push(tile);
+            if (isNew) setTimeout(() => el.classList.remove('tile-new'), 200);
+            return tile;
+        }
 
-        function createTile(val, r, c, isNew = false) {
-            const id = `tile-${++idCounter}`;
-            const el = document.createElement('div');
-            el.className = `tile tile-${val} ${isNew ? 'tile-new' : ''}`;
-            el.textContent = val;
-            setTilePosition(el, r, c);
-            tileLayer.appendChild(el);
-            const tile = {id, val, r, c, el};
-            tiles.push(tile);
-            if (isNew) setTimeout(() => el.classList.remove('tile-new'), 200);
-            return tile;
-        }
+        function setTilePosition(el, r, c) {
+            el.style.left = `calc(12px + ${c} * (25% - 3px))`;
+            el.style.top = `calc(12px + ${r} * (25% - 3px))`;
+        }
 
-        function setTilePosition(el, r, c) {
-            el.style.left = `calc(12px + ${c} * (25% - 3px))`;
-            el.style.top = `calc(12px + ${r} * (25% - 3px))`;
-        }
+        function addRandomTile() {
+            const occupied = new Set(tiles.map(t => `${t.r},${t.c}`));
+            const empty = [];
+            for(let r=0; r<GRID_SIZE; r++) {
+                for(let c=0; c<GRID_SIZE; c++) {
+                    if(!occupied.has(`${r},${c}`)) empty.push({r,c});
+                }
+            }
+            if(empty.length > 0) {
+                const pos = empty[Math.floor(Math.random() * empty.length)];
+                createTile(Math.random() < 0.9 ? 2 : 4, pos.r, pos.c, true);
+            }
+        }
 
-        function addRandomTile() {
-            const occupied = new Set(tiles.map(t => `${t.r},${t.c}`));
-            const empty = [];
-            for(let r=0; r<GRID_SIZE; r++) {
-                for(let c=0; c<GRID_SIZE; c++) {
-                    if(!occupied.has(`${r},${c}`)) empty.push({r,c});
-                }
-            }
-            if(empty.length > 0) {
-                const pos = empty[Math.floor(Math.random() * empty.length)];
-                createTile(Math.random() < 0.9 ? 2 : 4, pos.r, pos.c, true);
-            }
-        }
+        function move(dir) {
+            if(isAnimating || isGameOver) return;
+            if(isGameWon && !hasContinued) return;
 
-        function move(dir) {
-            if(isAnimating || isGameOver) return;
-            if(isGameWon && !hasContinued) return;
+            const currentStateObj = {
+                score: score,
+                isGameOver: isGameOver,
+                isGameWon: isGameWon,
+                hasContinued: hasContinued,
+                tiles: tiles.map(t => ({val: t.val, r: t.r, c: t.c}))
+            };
 
-            const currentStateObj = {
-                score: score,
-                isGameOver: isGameOver,
-                isGameWon: isGameWon,
-                hasContinued: hasContinued,
-                tiles: tiles.map(t => ({val: t.val, r: t.r, c: t.c}))
-            };
+            isAnimating = true;
+            const vector = {
+                'up': {r: -1, c: 0},
+                'down': {r: 1, c: 0},
+                'left': {r: 0, c: -1},
+                'right': {r: 0, c: 1}
+            }[dir];
 
-            isAnimating = true;
-            const vector = {
-                'up': {r: -1, c: 0},
-                'down': {r: 1, c: 0},
-                'left': {r: 0, c: -1},
-                'right': {r: 0, c: 1}
-            }[dir];
+            tiles.sort((a,b) => {
+                if(dir === 'right') return b.c - a.c;
+                if(dir === 'left') return a.c - b.c;
+                if(dir === 'down') return b.r - a.r;
+                if(dir === 'up') return a.r - b.r;
+                return 0;
+            });
 
-            tiles.sort((a,b) => {
-                if(dir === 'right') return b.c - a.c;
-                if(dir === 'left') return a.c - b.c;
-                if(dir === 'down') return b.r - a.r;
-                if(dir === 'up') return a.r - b.r;
-                return 0;
-            });
+            let moved = false;
+            let addedScore = 0;
+            let mergedIds = new Set();
+            let grid = Array(4).fill().map(() => Array(4).fill(null));
+            tiles.forEach(t => grid[t.r][t.c] = t);
 
-            let moved = false;
-            let addedScore = 0;
-            let mergedIds = new Set();
-            let grid = Array(4).fill().map(() => Array(4).fill(null));
-            tiles.forEach(t => grid[t.r][t.c] = t);
+            let tilesToRemove = [];
+            let tilesToAdd = [];
 
-            let tilesToRemove = [];
-            let tilesToAdd = [];
+            tiles.forEach(tile => {
+                let r = tile.r;
+                let c = tile.c;
+                let nextR = r;
+                let nextC = c;
 
-            tiles.forEach(tile => {
-                let r = tile.r;
-                let c = tile.c;
-                let nextR = r;
-                let nextC = c;
+                while(true) {
+                    let checkR = nextR + vector.r;
+                    let checkC = nextC + vector.c;
+                    if(checkR < 0 || checkR >= 4 || checkC < 0 || checkC >= 4) break;
+                    let obstacle = grid[checkR][checkC];
+                    if(!obstacle) {
+                        nextR = checkR; nextC = checkC;
+                    } else if (obstacle.val === tile.val && !mergedIds.has(obstacle.id) && !obstacle.isMerged) {
+                        nextR = checkR; nextC = checkC; break;
+                    } else { break; }
+                }
 
-                while(true) {
-                    let checkR = nextR + vector.r;
-                    let checkC = nextC + vector.c;
-                    if(checkR < 0 || checkR >= 4 || checkC < 0 || checkC >= 4) break;
-                    let obstacle = grid[checkR][checkC];
-                    if(!obstacle) {
-                        nextR = checkR;
-                        nextC = checkC;
-                    } else if (obstacle.val === tile.val && !mergedIds.has(obstacle.id) && !obstacle.isMerged) {
-                        nextR = checkR;
-                        nextC = checkC;
-                        break;
-                    } else {
-                        break;
-                    }
-                }
+                if(nextR !== r || nextC !== c) {
+                    moved = true;
+                    let target = grid[nextR][nextC];
+                    grid[r][c] = null;
 
-                if(nextR !== r || nextC !== c) {
-                    moved = true;
-                    let target = grid[nextR][nextC];
-                    grid[r][c] = null;
+                    if(target && target.val === tile.val && !mergedIds.has(target.id) && !target.isMerged) {
+                        let newVal = tile.val * 2;
+                        addedScore += newVal;
+                        setTilePosition(tile.el, nextR, nextC);
+                        tile.r = nextR; tile.c = nextC;
+                        tilesToRemove.push(tile);
+                        tilesToRemove.push(target);
+                        mergedIds.add(tile.id);
+                        mergedIds.add(target.id);
+                        tilesToAdd.push({val: newVal, r: nextR, c: nextC});
+                        grid[nextR][nextC] = {val: newVal, id: 'temp-'+Math.random(), isMerged: true}; 
+                    } else {
+                        setTilePosition(tile.el, nextR, nextC);
+                        tile.r = nextR; tile.c = nextC;
+                        grid[nextR][nextC] = tile;
+                    }
+                }
+            });
 
-                    if(target && target.val === tile.val && !mergedIds.has(target.id) && !target.isMerged) {
-                        let newVal = tile.val * 2;
-                        addedScore += newVal;
-                        setTilePosition(tile.el, nextR, nextC);
-                        tile.r = nextR; tile.c = nextC;
-                        tilesToRemove.push(tile);
-                        tilesToRemove.push(target);
-                        mergedIds.add(tile.id);
-                        mergedIds.add(target.id);
-                        tilesToAdd.push({val: newVal, r: nextR, c: nextC});
-                        
-                        grid[nextR][nextC] = {val: newVal, id: 'temp-'+Math.random(), isMerged: true}; 
-                    } else {
-                        setTilePosition(tile.el, nextR, nextC);
-                        tile.r = nextR; tile.c = nextC;
-                        grid[nextR][nextC] = tile;
-                    }
-                }
-            });
+            if(moved) {
+                historyStack.push(currentStateObj);
+                if(addedScore > 0) updateScore(score + addedScore);
+                setTimeout(() => {
+                    tilesToRemove.forEach(t => {
+                        if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el);
+                        tiles = tiles.filter(x => x !== t);
+                    });
+                    tilesToAdd.forEach(obj => {
+                        let t = createTile(obj.val, obj.r, obj.c, false);
+                        t.el.classList.add('tile-merged');
+                        setTimeout(() => t.el.classList.remove('tile-merged'), 200);
+                        if(obj.val === 2048 && !hasContinued) isGameWon = true;
+                    });
+                    addRandomTile();
+                    if(isGameWon && !hasContinued) {
+                        showMessage("恭喜過關!", score, true);
+                    } else if(checkGameOver()) {
+                        isGameOver = true;
+                        showMessage("遊戲結束", score, false);
+                    }
+                    isAnimating = false;
+                }, 100);
+            } else {
+                isAnimating = false;
+            }
+        }
 
-            if(moved) {
-                historyStack.push(currentStateObj);
-                if(addedScore > 0) updateScore(score + addedScore);
-                setTimeout(() => {
-                    tilesToRemove.forEach(t => {
-                        if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el);
-                        tiles = tiles.filter(x => x !== t);
-                    });
-                    tilesToAdd.forEach(obj => {
-                        let t = createTile(obj.val, obj.r, obj.c, false);
-                        t.el.classList.add('tile-merged');
-                        setTimeout(() => t.el.classList.remove('tile-merged'), 200);
-                        if(obj.val === 2048 && !hasContinued) isGameWon = true;
-                    });
-                    addRandomTile();
-                    if(isGameWon && !hasContinued) {
-                        showMessage("恭喜過關!", score, true);
-                    } else if(checkGameOver()) {
-                        isGameOver = true;
-                        showMessage("遊戲結束", score, false);
-                    }
-                    isAnimating = false;
-                }, 100);
-            } else {
-                isAnimating = false;
-            }
-        }
+        function checkGameOver() {
+            if(tiles.length < 16) return false;
+            let g = Array(4).fill().map(()=>Array(4).fill(0));
+            tiles.forEach(t => g[t.r][t.c] = t.val);
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<4; c++) {
+                    let v = g[r][c];
+                    if(r<3 && g[r+1][c]===v) return false;
+                    if(c<3 && g[r][c+1]===v) return false;
+                }
+            }
+            return true;
+        }
 
-        function checkGameOver() {
-            if(tiles.length < 16) return false;
-            let g = Array(4).fill().map(()=>Array(4).fill(0));
-            tiles.forEach(t => g[t.r][t.c] = t.val);
-            for(let r=0; r<4; r++) {
-                for(let c=0; c<4; c++) {
-                    let v = g[r][c];
-                    if(r<3 && g[r+1][c]===v) return false;
-                    if(c<3 && g[r][c+1]===v) return false;
-                }
-            }
-            return true;
-        }
+        function updateScore(s) {
+            score = s;
+            scoreEl.innerText = score;
+            saveHighScore(score);
+        }
 
-        function updateScore(s) {
-            score = s;
-            scoreEl.innerText = score;
-            saveHighScore(score);
-        }
+        // 修正：統一處理訊息顯示與存檔邏輯
+        function showMessage(title, s, isWin) {
+            messageTitle.innerText = title;
+            messageScore.innerText = "得分: " + s;
+            messageModal.classList.remove('hidden-custom');
+            if(isWin) btnContinue.classList.remove('hidden-custom');
+            else btnContinue.classList.add('hidden-custom');
 
-        function showMessage(title, s, isWin) {
-            messageTitle.innerText = title;
-            messageScore.innerText = "得分: " + s;
-            messageModal.classList.remove('hidden-custom');
-            if(isWin) btnContinue.classList.remove('hidden-custom');
-            else btnContinue.classList.add('hidden-custom');
+            // 確保這場遊戲的分數只會存入排行榜一次
+            if (!hasSavedThisRun) {
+                updateLeaderboardList(s);
+                hasSavedThisRun = true;
+            }
+        }
 
-            if (!hasSavedThisRun) {
-                updateLeaderboardList(s);
-                hasSavedThisRun = true;
-            }
-        }
+        function continueGame() {
+            hasContinued = true;
+            messageModal.classList.add('hidden-custom');
+        }
 
-        function continueGame() {
-            hasContinued = true;
-            messageModal.classList.add('hidden-custom');
-        }
+        function handleKey(e) {
+            const map = {'ArrowUp':'up', 'ArrowDown':'down', 'ArrowLeft':'left', 'ArrowRight':'right'};
+            if(map[e.code]) { e.preventDefault(); move(map[e.code]); }
+        }
 
-        function handleKey(e) {
-            const map = {'ArrowUp':'up', 'ArrowDown':'down', 'ArrowLeft':'left', 'ArrowRight':'right'};
-            if(map[e.code]) { e.preventDefault(); move(map[e.code]); }
-        }
-
-        let touchStart = null;
-        function handleTouchStart(e) { if(e.touches.length===1) touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY}; }
-        function handleTouchEnd(e) {
-            if(!touchStart) return;
-            let dx = e.changedTouches[0].clientX - touchStart.x;
-            let dy = e.changedTouches[0].clientY - touchStart.y;
-            if(Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
-                if(Math.abs(dx) > Math.abs(dy)) move(dx>0?'right':'left');
-                else move(dy>0?'down':'up');
-            }
-            touchStart = null;
-        }
-        
-        function loadHighScores() {
-            let s = localStorage.getItem('2048_best');
-            if(s) bestScoreEl.innerText = s;
-            let list = JSON.parse(localStorage.getItem('2048_list')||'[]');
-            updateLeaderboardUI(list);
-        }
-        function saveHighScore(s) {
-            let best = parseInt(localStorage.getItem('2048_best')||0);
-            if(s > best) {
-                localStorage.setItem('2048_best', s);
-                bestScoreEl.innerText = s;
-            }
-        }
-        function updateLeaderboardList(finalScore) {
-            let list = JSON.parse(localStorage.getItem('2048_list')||'[]');
-            list.push({score: finalScore, date: new Date().toLocaleDateString()});
-            list.sort((a,b) => b.score - a.score);
-            list = list.slice(0, 5);
-            localStorage.setItem('2048_list', JSON.stringify(list));
-            updateLeaderboardUI(list);
-        }
-        function updateLeaderboardUI(list) {
-            leaderboardEl.innerHTML = '';
-            if(list.length === 0) {
-                leaderboardEl.innerHTML = '<li>尚無紀錄</li>';
-                return;
-            }
-            list.forEach((item, i) => {
-                let li = document.createElement('li');
-                li.className = "flex justify-between py-1 border-b border-stone-100 last:border-0";
-                li.innerHTML = `<span class="font-bold text-stone-400">#${i+1}</span> <span class="font-bold text-stone-600">${item.score}</span>`;
-                leaderboardEl.appendChild(li);
-            });
-        }
-        function toggleRules() {
-            const el = document.getElementById('rules-modal');
-            el.classList.toggle('hidden-custom');
-        }
-    </script>
+        let touchStart = null;
+        function handleTouchStart(e) { if(e.touches.length===1) touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY}; }
+        function handleTouchEnd(e) {
+            if(!touchStart) return;
+            let dx = e.changedTouches[0].clientX - touchStart.x;
+            let dy = e.changedTouches[0].clientY - touchStart.y;
+            if(Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
+                if(Math.abs(dx) > Math.abs(dy)) move(dx>0?'right':'left');
+                else move(dy>0?'down':'up');
+            }
+            touchStart = null;
+        }
+        
+        function loadHighScores() {
+            let s = localStorage.getItem('2048_best');
+            if(s) bestScoreEl.innerText = s;
+            let list = JSON.parse(localStorage.getItem('2048_list')||'[]');
+            updateLeaderboardUI(list);
+        }
+        function saveHighScore(s) {
+            let best = parseInt(localStorage.getItem('2048_best')||0);
+            if(s > best) {
+                localStorage.setItem('2048_best', s);
+                bestScoreEl.innerText = s;
+            }
+        }
+        function updateLeaderboardList(finalScore) {
+            if (finalScore === 0) return; // 0分不列入紀錄
+            let list = JSON.parse(localStorage.getItem('2048_list')||'[]');
+            list.push({score: finalScore, date: new Date().toLocaleDateString()});
+            list.sort((a,b) => b.score - a.score);
+            list = list.slice(0, 5);
+            localStorage.setItem('2048_list', JSON.stringify(list));
+            updateLeaderboardUI(list);
+        }
+        function updateLeaderboardUI(list) {
+            leaderboardEl.innerHTML = '';
+            if(list.length === 0) {
+                leaderboardEl.innerHTML = '<li>尚無紀錄</li>';
+                return;
+            }
+            list.forEach((item, i) => {
+                let li = document.createElement('li');
+                li.className = "flex justify-between py-1 border-b border-stone-100 last:border-0";
+                li.innerHTML = `<span class="font-bold text-stone-400">#${i+1}</span> <span class="font-bold text-stone-600">${item.score}</span>`;
+                leaderboardEl.appendChild(li);
+            });
+        }
+        function toggleRules() {
+            const el = document.getElementById('rules-modal');
+            el.classList.toggle('hidden-custom');
+        }
+    </script>
 </body>
 </html>
