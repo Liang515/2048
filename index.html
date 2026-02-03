@@ -13,7 +13,7 @@
     
     <title>2048</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
@@ -23,7 +23,6 @@
             background-color: #f5f5f4;
             overflow-y: auto; 
             overflow-x: hidden;
-            /* 防止長按選取文字 */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -39,7 +38,6 @@
             overflow: hidden;
         }
 
-        /* 層級容器 */
         #background-layer, #tile-layer {
             position: absolute;
             top: 0;
@@ -49,22 +47,18 @@
             pointer-events: none;
         }
 
-        /* 通用方塊樣式 */
         .grid-cell, .tile {
             position: absolute;
-            /* 寬度計算：(100% - 5個12px間隙) / 4 */
             width: calc(25% - 15px);
             height: calc(25% - 15px);
             border-radius: 4px;
         }
 
-        /* 背景的空格子 */
         .grid-cell {
             background-color: #cdc1b4; 
             z-index: 1; 
         }
 
-        /* 數字方塊 */
         .tile {
             display: flex;
             justify-content: center;
@@ -80,7 +74,7 @@
             .tile { font-size: 2rem; }
         }
 
-        /* --- 顏色主題 --- */
+        /* 顏色主題 */
         .tile-2 { background: #eee4da; color: #776e65; }
         .tile-4 { background: #ede0c8; color: #776e65; }
         .tile-8 { background: #f2b179; color: #f9f6f2; }
@@ -95,7 +89,6 @@
         .tile-4096 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 30px #3c3a32; border: 2px solid #fff; }
         .tile-8192 { background: #3c3a32; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 35px #3c3a32; border: 2px solid #edc22e; }
 
-        /* 動畫 */
         .tile-new { animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
         .tile-merged { z-index: 20; animation: pop 0.2s ease-out backwards; animation-delay: 0.05s; }
 
@@ -107,34 +100,35 @@
 
         .hidden-custom { display: none !important; }
 
-        /* --- 手機橫向模式 (Landscape) 優化 --- */
+        /* 手機橫向模式優化 */
         @media (max-height: 600px) and (orientation: landscape) {
             body { padding: 0.5rem !important; align-items: center !important; }
             .main-layout { flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 1.5rem !important; }
             .info-panel { width: 160px !important; gap: 0.5rem !important; }
             .info-panel h1 { font-size: 2rem !important; line-height: 1 !important; }
             .info-panel button { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; font-size: 1rem !important; }
-            .leaderboard-container { margin-top: 0.25rem !important; padding: 0.5rem !important; }
-            #leaderboard { max-height: 50px !important; }
             #game-container { width: 85vh !important; height: 85vh !important; max-width: 500px; max-height: 500px; }
             .mobile-hint { display: none !important; }
+            /* 橫向時隱藏底部排行榜，顯示側邊排行榜 */
+            .mobile-leaderboard-wrapper { display: none !important; }
+            .desktop-leaderboard-wrapper { display: block !important; }
         }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen p-4 select-none md:justify-center">
+<body class="flex flex-col items-center min-h-screen p-2 md:p-4 md:justify-center">
 
-    <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-4">
+    <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-3">
         
-        <!-- 左側資訊區 -->
-        <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
+        <!-- 左側資訊區 (手機版只顯示上半部) -->
+        <div class="info-panel w-full md:w-72 flex flex-col gap-2 md:gap-4 flex-shrink-0">
             <div class="flex justify-between items-center">
-                <h1 class="text-4xl md:text-6xl font-bold text-stone-700">2048</h1>
+                <h1 class="text-3xl md:text-6xl font-bold text-stone-700">2048</h1>
                 <button onclick="toggleRules()" class="md:hidden p-2 bg-blue-100 rounded-full text-blue-600">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                 </button>
             </div>
             
-            <div class="flex gap-3">
+            <div class="flex gap-2 md:gap-3">
                 <div class="bg-[#bbada0] p-2 md:p-3 rounded text-center flex-1">
                     <div class="text-[#eee4da] text-xs font-bold uppercase">SCORE</div>
                     <div id="score" class="text-white text-xl md:text-2xl font-bold">0</div>
@@ -145,13 +139,12 @@
                 </div>
             </div>
 
-            <!-- 按鈕區：重新開始 & 上一步 -->
+            <!-- 按鈕區 -->
             <div class="flex gap-2">
                 <button onclick="restartGame()" class="flex-1 bg-[#8f7a66] hover:bg-[#806c59] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                     重來
                 </button>
-                <!-- 修正配色：改為溫暖的橘紅色 (#f67c5f)，與遊戲方塊 32 的顏色一致，不突兀且好辨識 -->
                 <button id="undo-btn" onclick="undo()" class="flex-1 bg-[#f67c5f] hover:bg-[#e06547] text-white text-lg font-bold py-2 md:py-3 rounded active:scale-95 transition-transform shadow-md flex items-center justify-center gap-1">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
                     上一步
@@ -162,12 +155,13 @@
                 遊戲說明
             </button>
 
-            <!-- 排行榜 -->
-            <div class="leaderboard-container mt-1 md:mt-2 bg-white p-3 md:p-4 rounded shadow-sm border border-stone-200">
+            <!-- 桌面版排行榜 (手機版隱藏) -->
+            <div class="desktop-leaderboard-wrapper hidden md:block leaderboard-container mt-1 md:mt-2 bg-white p-3 md:p-4 rounded shadow-sm border border-stone-200">
                 <div class="flex items-center gap-2 mb-2 text-stone-600 font-bold border-b pb-2 text-sm uppercase tracking-wide">
                     🏆 排行榜
                 </div>
-                <ul id="leaderboard" class="space-y-1 text-stone-500 text-sm max-h-[100px] md:max-h-none overflow-y-auto">
+                <!-- 這裡使用 class 而不是 id，因為我們會渲染兩份排行榜 -->
+                <ul class="leaderboard-list space-y-1 text-stone-500 text-sm max-h-[200px] overflow-y-auto">
                     <li>尚無紀錄</li>
                 </ul>
             </div>
@@ -177,7 +171,7 @@
         <div class="relative flex-shrink-0 flex flex-col items-center">
             <div id="game-container" 
                  class="relative shadow-lg" 
-                 style="width: min(90vw, 65vh, 500px); height: min(90vw, 65vh, 500px);">
+                 style="width: min(92vw, 65vh, 500px); height: min(92vw, 65vh, 500px);">
                 
                 <div class="game-board-container" id="board-container">
                     <div id="background-layer"></div>
@@ -205,9 +199,21 @@
                 可使用鍵盤方向鍵或在螢幕滑動
             </div>
         </div>
+
+        <!-- 手機版排行榜 (桌面版隱藏，顯示在遊戲盤下方) -->
+        <div class="mobile-leaderboard-wrapper md:hidden w-full px-1">
+            <div class="bg-white p-3 rounded shadow-sm border border-stone-200">
+                <div class="flex items-center gap-2 mb-2 text-stone-600 font-bold border-b pb-2 text-sm uppercase tracking-wide">
+                    🏆 排行榜
+                </div>
+                <ul class="leaderboard-list space-y-1 text-stone-500 text-sm max-h-[120px] overflow-y-auto">
+                    <li>尚無紀錄</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
-    <!-- 規則 -->
+    <!-- 規則說明視窗 -->
     <div id="rules-modal" class="hidden-custom fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
         <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
             <h2 class="text-2xl font-bold text-stone-700 mb-4 border-b pb-2">如何遊玩</h2>
@@ -243,7 +249,8 @@
         const messageTitle = document.getElementById('message-title');
         const messageScore = document.getElementById('message-score');
         const btnContinue = document.getElementById('btn-continue');
-        const leaderboardEl = document.getElementById('leaderboard');
+        // 選取所有排行榜列表 (手機版+桌面版)
+        const leaderboardEls = document.querySelectorAll('.leaderboard-list');
 
         initBoardBackground();
         loadHighScores();
@@ -541,16 +548,19 @@
             updateLeaderboardUI(list);
         }
         function updateLeaderboardUI(list) {
-            leaderboardEl.innerHTML = '';
-            if(list.length === 0) {
-                leaderboardEl.innerHTML = '<li>尚無紀錄</li>';
-                return;
-            }
-            list.forEach((item, i) => {
-                let li = document.createElement('li');
-                li.className = "flex justify-between py-1 border-b border-stone-100 last:border-0";
-                li.innerHTML = `<span class="font-bold text-stone-400">#${i+1}</span> <span class="font-bold text-stone-600">${item.score}</span>`;
-                leaderboardEl.appendChild(li);
+            // 更新所有排行榜列表 (手機+桌面)
+            leaderboardEls.forEach(el => {
+                el.innerHTML = '';
+                if(list.length === 0) {
+                    el.innerHTML = '<li>尚無紀錄</li>';
+                    return;
+                }
+                list.forEach((item, i) => {
+                    let li = document.createElement('li');
+                    li.className = "flex justify-between py-1 border-b border-stone-100 last:border-0";
+                    li.innerHTML = `<span class="font-bold text-stone-400">#${i+1}</span> <span class="font-bold text-stone-600">${item.score}</span>`;
+                    el.appendChild(li);
+                });
             });
         }
         function toggleRules() {
@@ -560,3 +570,6 @@
     </script>
 </body>
 </html>
+
+
+
