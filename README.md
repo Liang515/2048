@@ -63,6 +63,8 @@
 
 ---
 
-## 📜 授權條款
+## 📜 授權與致敬 (Licensing & Attribution)
 
-本專案採用 **MIT License** 授權，歡迎自由修改與分享。
+* 本專案基於 **[Gabriele Cirulli](https://github.com/gabrielecirulli/2048)** 的開源專案 《2048》 進行二次開發與最佳化。在此特別致謝原作者的開源貢獻。
+* 原版遊戲概念與設計靈感源自 Asher Vollmer 的 **《Threes!》** 以及 Veewo Land 的 **《1024》**。
+* 本專案採用 **[MIT License](file:///Users/liangchen/Downloads/2048/LICENSE)** 授權條款，您可以自由修改、散佈及使用此程式碼，惟請保留原始著作權宣告與授權許可聲明。
