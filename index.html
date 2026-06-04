@@ -299,7 +299,7 @@
                 </div>
             </div>
 
-            <!-- 第二列：設定與按鈕 (手機版：棋盤大小、重來、悔棋與工具按鈕全部併排在一橫列；桌機版：維持垂直堆疊) -->
+            <!-- 第二列：設定與按鈕 (手機版：棋盤大小、重來、上一步與工具按鈕全部併排在一橫列；桌機版：維持垂直堆疊) -->
             <div class="flex flex-row md:flex-col gap-2 w-full justify-between items-center md:items-stretch">
                 <!-- 棋盤大小選單 -->
                 <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-2 py-1.5 md:p-3 rounded flex justify-between items-center gap-1 shadow-sm transition-colors duration-300 flex-shrink-0">
@@ -320,7 +320,7 @@
                     </button>
                     <button id="undo-btn" onclick="undo()" class="flex-1 md:flex-initial bg-sky-600 hover:bg-sky-750 text-white text-xs md:text-lg font-extrabold px-2.5 py-1.5 md:py-3.5 md:w-full rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
                         <svg class="hidden md:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
-                        悔棋
+                        上一步
                     </button>
                     
                     <!-- 手機版工具按鈕 (靜音、主題、說明與主要按鈕在一行合併) -->
@@ -416,7 +416,7 @@
             <p id="message-score" class="text-lg font-bold mb-6 text-stone-600 dark:text-stone-400 font-black">Score: 0</p>
             <div class="flex gap-3 w-full">
                 <button onclick="undoDialog()" class="flex-1 bg-[#f67c5f] hover:bg-[#e06547] text-white py-3 rounded font-bold text-lg shadow-md hover:scale-105 active:scale-95 transition-transform">
-                    悔棋
+                    上一步
                 </button>
                 <button onclick="restartGameDialog()" class="flex-1 bg-[#8f7a66] hover:bg-[#806c59] text-white py-3 rounded font-bold text-lg shadow-md hover:scale-105 active:scale-95 transition-transform">
                     重來
