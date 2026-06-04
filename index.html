@@ -253,6 +253,23 @@
             <div class="flex justify-between items-center md:items-stretch gap-2">
                 <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-[#776e65] dark:text-[#edc22e] transition-colors duration-300">2048</h1>
                 
+                <!-- 手機版工具按鈕 (在 2048 Logo 旁邊，利用空位) -->
+                <div class="flex md:hidden gap-1.5 items-center">
+                    <button id="mute-btn-mobile" onclick="toggleMute()" class="p-1.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="開啟/關閉音效">
+                        <svg id="mute-icon-mobile" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        </svg>
+                    </button>
+                    <button id="theme-btn-mobile" onclick="toggleTheme()" class="p-1.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="切換深色/淺色主題">
+                        <svg id="theme-icon-mobile" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                        </svg>
+                    </button>
+                    <button onclick="toggleRules()" class="p-1.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors" title="遊戲說明">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    </button>
+                </div>
+
                 <!-- 手機版分數板 (桌機版隱藏) -->
                 <div class="flex md:hidden gap-2">
                     <div class="bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
@@ -303,11 +320,11 @@
                 </div>
             </div>
 
-            <!-- 第二列：設定與工具列 (手機版：棋盤大小與工具按鈕分居左右；桌機版：單獨一列且只顯示棋盤大小) -->
-            <div class="flex flex-row md:flex-col justify-between items-center w-full gap-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-3 py-2 md:p-3 rounded shadow-sm transition-colors duration-300 flex-shrink-0">
+            <!-- 第二列：設定與按鈕 (手機版：棋盤大小與遊戲按鈕全部併排在一橫列；桌機版：維持垂直堆疊) -->
+            <div class="flex flex-row md:flex-col gap-2 w-full justify-between items-center md:items-stretch">
                 <!-- 棋盤大小選單 -->
-                <div class="flex items-center gap-2">
-                    <span class="text-xs md:text-sm font-extrabold text-stone-500 dark:text-stone-400 uppercase tracking-wider">棋盤大小</span>
+                <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-2 py-2 md:p-3 rounded flex justify-between items-center gap-1.5 shadow-sm transition-colors duration-300 flex-shrink-0">
+                    <span class="hidden md:inline text-xs font-extrabold text-stone-500 dark:text-stone-400 uppercase tracking-wider">棋盤大小</span>
                     <select id="grid-size-select" onchange="changeGridSize(parseInt(this.value))" class="bg-transparent text-stone-700 dark:text-stone-200 font-bold outline-none cursor-pointer text-xs md:text-sm">
                         <option value="3" class="bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200">3 x 3</option>
                         <option value="4" selected class="bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200">4 x 4</option>
@@ -315,35 +332,18 @@
                         <option value="6" class="bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200">6 x 6</option>
                     </select>
                 </div>
-                
-                <!-- 手機版工具按鈕 (靜音、主題、說明) (桌機版隱藏) -->
-                <div class="flex md:hidden gap-2.5 items-center">
-                    <button id="mute-btn-mobile" onclick="toggleMute()" class="p-2 rounded bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="開啟/關閉音效">
-                        <svg id="mute-icon-mobile" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        </svg>
+
+                <!-- 遊戲動作按鈕區 (手機版：兩按鈕併排；桌機版：垂直堆疊) -->
+                <div class="flex flex-row md:flex-col gap-1.5 md:gap-2 flex-1 justify-end md:justify-start">
+                    <button onclick="confirmRestart()" class="flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        重來
                     </button>
-                    <button id="theme-btn-mobile" onclick="toggleTheme()" class="p-2 rounded bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="切換深色/淺色主題">
-                        <svg id="theme-icon-mobile" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="5"></circle>
-                        </svg>
-                    </button>
-                    <button onclick="toggleRules()" class="p-2 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors" title="遊戲說明">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    <button id="undo-btn" onclick="undo()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+                        上一步
                     </button>
                 </div>
-            </div>
-
-            <!-- 第三列：遊戲動作按鈕區 (手機版：兩按鈕等寬併排；桌機版：維持垂直堆疊) -->
-            <div class="flex flex-row md:flex-col gap-2 w-full">
-                <button onclick="confirmRestart()" class="flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-sm md:text-lg font-extrabold py-2.5 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
-                    <svg class="hidden md:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                    <span class="md:hidden text-base">🔄</span>重來
-                </button>
-                <button id="undo-btn" onclick="undo()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white text-sm md:text-lg font-extrabold py-2.5 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
-                    <svg class="hidden md:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
-                    <span class="md:hidden text-base">↩️</span>上一步
-                </button>
             </div>
             
             <button onclick="toggleRules()" class="hidden md:block bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-lg font-bold py-2 rounded shadow-md transition-colors duration-300">
