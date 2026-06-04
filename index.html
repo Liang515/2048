@@ -247,7 +247,9 @@
             
             <!-- 第一列：Logo與分數板 (手機版併排一列；桌機版Logo單獨一列，分數板在下方) -->
             <div class="flex justify-between items-center md:items-stretch gap-2">
-                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-[#776e65] dark:text-[#edc22e] transition-colors duration-300">2048</h1>
+                <h1 class="flex items-center">
+                    <img src="2048logo.png" alt="2048" class="h-10 md:h-16 w-auto object-contain transition-transform duration-300 hover:scale-105">
+                </h1>
                 
                 <!-- 手機版分數板 (桌機版隱藏) -->
                 <div class="flex md:hidden gap-2">
