@@ -2,7 +2,7 @@
 
 一個基於 HTML5、Tailwind CSS 與原生 JavaScript 開發的 2048 網頁遊戲。除了經典的 2048 玩法外，我們特別優化了行動裝置的使用體驗，並加入了豐富的視覺與音效特效，旨在打造極致的遊玩體驗。
 
-👉 **[立即線上遊玩](https://liang515.github.io/2048/)** *(請替換為您實際的 GitHub Pages 連結)*
+👉 **[立即線上遊玩](https://2048-drab.vercel.app)**
 
 ---
 
@@ -39,6 +39,7 @@
 * **核心邏輯**：Vanilla JavaScript (原生 JS 狀態管理與二維矩陣移動算法)
 * **音效處理**：Web Audio API Oscillator (振盪器) 與 Gain (增益節點)
 * **動畫與特效**：HTML5 Canvas (Confetti) & CSS Keyframe 動畫
+* **部署平台**：Vercel
 
 ---
 
