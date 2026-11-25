@@ -14,11 +14,15 @@
 * **無 Emoji 質感按鈕**：操作按鈕（重來、上一步）全面採用簡約 SVG 向量圖示，完美融合精緻的設計語言。
 * **自動置中對稱**：不論在何種比例的螢幕上，遊戲畫面皆會自動於垂直與水平方向優雅置中。
 
-### 👴 長輩模式 (Senior Mode)
-* **一鍵放大**：按「大字」按鈕，方塊數字、分數、按鈕與對話框文字全面放大，按鈕高度至少 56px，好看也好按。
-* **高對比方塊**：調整淺色方塊的文字顏色與中高階方塊的飽和度，並加粗數字，降低辨識負擔。
-* **設定記憶**：切換後會記在 `localStorage`；也可以直接分享 `?senior=1` 網址，打開就是長輩模式（`?senior=0` 關閉）。
-* 本模式整合自原本獨立的 [senior-2048](https://github.com/Liang515/senior-2048) 專案。
+### 👴 長輩模式（預設開啟）
+這個專案最初是做給媽媽玩的：大字、好按、**沒有廣告**。
+* **第一次打開就是大字**：方塊數字、分數、按鈕、對話框全面放大，按鈕高度至少 56px。
+* **高對比配色**：每個方塊的文字對比都 ≥ 4.5（WCAG AA），深色模式也一樣，由 `src/style.test.ts` 自動檢查。
+* **簡單介面**：只留「重來」「上一步」「設定」「說明」；棋盤大小、音效、深色、清除紀錄收進「設定」。
+* **整個畫面都能滑**：不用對準棋盤，在畫面任何地方滑動就能移動方塊（從「我的紀錄」卡開始滑則是捲動頁面）。
+* **我的紀錄**：顯示今天玩了幾局、今天最高分、連續玩了幾天，加上前五名排行榜；破紀錄時自動帶入上次的名字。
+* **放到手機桌面**：支援 PWA，可「加入主畫面」，像 App 一樣全螢幕開啟，沒網路也能玩；第一次用手機打開會有 iPhone／Android 的圖文教學。
+* 網址加 `?senior=0` 可關閉、`?senior=1` 可開啟。本模式整合自原本獨立的 [senior-2048](https://github.com/Liang515/senior-2048) 專案。
 
 ### 🌓 智慧雙色主題 (Smart Dark Mode)
 * **系統自動適應**：預設自動偵測您的作業系統主題（淺色/深色），並即時監聽系統偏好變更進行動態切換。
@@ -46,6 +50,7 @@
 * **音效處理**：Web Audio API Oscillator (振盪器) 與 Gain (增益節點)
 * **動畫與特效**：HTML5 Canvas (Confetti) & CSS Keyframe 動畫
 * **程式品質**：Biome（lint + format）
+* **離線與安裝**：vite-plugin-pwa（Service Worker 預先快取）
 * **部署平台**：Vercel（`vercel.json` 指定 Vite 建置，輸出 `dist/`）
 
 ### 專案結構
@@ -55,9 +60,10 @@ index.html            頁面結構
 public/               圖示與 Web App Manifest
 src/main.ts           畫面操作、事件、遊戲流程
 src/game/logic.ts     純遊戲邏輯（含測試 logic.test.ts）
+src/game/stats.ts     每日遊玩紀錄（含測試 stats.test.ts）
 src/storage.ts        localStorage 存取（存檔、排行榜、偏好設定）
 src/effects/          音效與彩帶特效
-src/style.css         Tailwind 與自訂樣式（主題色、長輩模式）
+src/style.css         Tailwind 與自訂樣式（主題色、長輩模式；對比由 style.test.ts 檢查）
 ```
 
 ---

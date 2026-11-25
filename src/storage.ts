@@ -1,5 +1,6 @@
 // localStorage 包裝：鍵名沿用舊版，既有玩家的存檔與排行榜不受影響
 import type { TileState } from "./game/logic";
+import type { Stats } from "./game/stats";
 
 export interface SavedState {
   score: number;
@@ -49,9 +50,30 @@ export const prefs = {
   /** 'dark' | 'light' | null（null 代表跟隨系統） */
   getTheme: () => get("2048_theme"),
   setTheme: (v: "dark" | "light") => set("2048_theme", v),
-  getSenior: () => get("2048_senior") === "true",
+  /** null 代表還沒選過（第一次打開） */
+  getSenior: (): boolean | null => {
+    const v = get("2048_senior");
+    return v === null ? null : v === "true";
+  },
   setSenior: (v: boolean) => set("2048_senior", String(v)),
+  getLastName: () => get("2048_last_name") ?? "",
+  setLastName: (v: string) => set("2048_last_name", v),
+  getInstallHintDismissed: () => get("2048_install_hint_dismissed") === "true",
+  setInstallHintDismissed: () => set("2048_install_hint_dismissed", "true"),
 };
+
+export function getStats(): Stats {
+  try {
+    const stats = JSON.parse(get("2048_stats") ?? "{}");
+    return stats && typeof stats === "object" && !Array.isArray(stats) ? stats : {};
+  } catch {
+    return {};
+  }
+}
+
+export function setStats(stats: Stats): void {
+  set("2048_stats", JSON.stringify(stats));
+}
 
 export function getBest(size: number): number {
   return Number.parseInt(get(`2048_best_${size}`) ?? "0", 10) || 0;

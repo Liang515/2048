@@ -303,34 +303,58 @@ dialog[open]::backdrop {
   opacity: 1;
 }
 
-/* 長輩模式：大字、大按鈕、高對比方塊 */
-body.senior-mode {
+/* 長輩模式：大字、大按鈕、高對比方塊
+ * 淺色配色：每個方塊的文字對比都 ≥ 4.5（WCAG AA），由 src/style.test.ts 檢查 */
+body.senior-mode:not(.dark-mode) {
   --tile-2-bg: #f3efe9;
-  --tile-2-color: #5c5247;
+  --tile-2-color: #4a4037;
   --tile-4-bg: #ece2d2;
-  --tile-4-color: #4d453c;
-  --tile-8-bg: #e98f4f;
-  --tile-16-bg: #ea7339;
-  --tile-32-bg: #e8502a;
-  --tile-64-bg: #ec2d13;
-  --tile-128-bg: #e6b419;
-  --tile-256-bg: #d5a911;
-  --tile-512-bg: #cc9c0b;
-  --tile-1024-bg: #bd8e05;
-  --tile-2048-bg: #b37f00;
+  --tile-4-color: #4a4037;
+  --tile-8-bg: #f5b27a;
+  --tile-8-color: #4a2105;
+  --tile-16-bg: #f08a4b;
+  --tile-16-color: #3d1a00;
+  --tile-32-bg: #c8401b;
+  --tile-32-color: #ffffff;
+  --tile-64-bg: #a82410;
+  --tile-64-color: #ffffff;
+  --tile-128-bg: #f2d064;
+  --tile-128-color: #4a3500;
+  --tile-256-bg: #edc53a;
+  --tile-256-color: #4a3500;
+  --tile-512-bg: #e0ad1a;
+  --tile-512-color: #3d2c00;
+  --tile-1024-bg: #946508;
+  --tile-1024-color: #ffffff;
+  --tile-2048-bg: #7a5000;
+  --tile-2048-color: #ffffff;
 }
+/* 深色＋長輩模式：沿用深色配色，把對比不足的方塊加深 */
 body.dark-mode.senior-mode {
-  --tile-2-bg: #e2e8f0;
-  --tile-4-bg: #a8b4c4;
+  --tile-256-bg: #115e59;
+  --tile-64-bg: #cc1f1f;
+  --tile-1024-bg: #1e40af;
 }
 body.senior-mode .tile {
   font-weight: 900;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
-body.senior-mode .tile-2,
-body.senior-mode .tile-4 {
-  text-shadow: none;
+
+/* 長輩模式整個畫面都能滑動，關掉回彈與下拉重新整理 */
+html:has(body.senior-mode) {
+  overscroll-behavior: none;
 }
+
+/* 簡單介面：長輩模式隱藏較少用的控制項，改由「設定」開啟 */
+.simple-only {
+  display: none !important;
+}
+body.senior-mode .simple-hide {
+  display: none !important;
+}
+body.senior-mode .simple-only {
+  display: inline-flex !important;
+}
+
 body.senior-mode .senior-btn {
   background-color: #f59e0b !important;
   border-color: #f59e0b !important;
@@ -396,6 +420,93 @@ body.senior-mode dialog button {
 body.senior-mode #game-container {
   width: min(94vw, 68vh, 560px) !important;
   height: min(94vw, 68vh, 560px) !important;
+}
+
+/* 我的紀錄 */
+.records-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+.records-row.hidden {
+  display: none;
+}
+.records-row .stat {
+  background: var(--bg-body);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.25rem;
+}
+.records-row .stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.records-row .stat-value {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  font-family: var(--font-tiles);
+}
+.records-row .stat-note {
+  grid-column: 1 / -1;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+body.senior-mode .records-row .stat-label {
+  font-size: 0.95rem;
+}
+body.senior-mode .records-row .stat-value {
+  font-size: 1.6rem;
+}
+body.senior-mode .records-row .stat-note {
+  font-size: 1.05rem;
+}
+
+/* 設定對話框 */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.5rem;
+  font-weight: 800;
+  text-align: left;
+}
+.setting-state::after {
+  content: "關";
+  display: inline-block;
+  min-width: 3rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: var(--card-border);
+  color: var(--text-primary);
+  text-align: center;
+}
+.setting-row[aria-pressed="true"] .setting-state::after {
+  content: "開";
+  background: #16a34a;
+  color: #fff;
+}
+.size-btn {
+  min-width: 2.75rem;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid var(--card-border);
+  border-radius: 0.5rem;
+  font-weight: 900;
+}
+.size-btn[aria-pressed="true"] {
+  border-color: #f59e0b;
+  background: #f59e0b;
+  color: #fff;
+}
+body.senior-mode dialog .size-btn {
+  min-height: 48px;
 }
 
 /* 手機橫向模式優化 */

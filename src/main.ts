@@ -12,6 +12,7 @@ import {
   tileFontSize,
   tileGeometry,
 } from "./game/logic";
+import { dayKey, recordGameEnd, recordScore, streak } from "./game/stats";
 import type { SavedState } from "./storage";
 import * as storage from "./storage";
 
@@ -35,6 +36,7 @@ let idCounter = 0;
 let hasSavedThisRun = false;
 let isSenior = false;
 let historyStack: SavedState[] = [];
+let stats = storage.getStats();
 
 const backgroundLayer = $("background-layer");
 const tileLayer = $("tile-layer");
@@ -47,6 +49,7 @@ const messageTitle = $("message-title");
 const messageScore = $("message-score");
 const btnContinue = $("btn-continue");
 const leaderboardEls = document.querySelectorAll<HTMLUListElement>(".leaderboard-list");
+const todayStatsEls = document.querySelectorAll<HTMLElement>(".today-stats");
 
 // ---------- 主題 ----------
 function applyTheme(isDark: boolean) {
@@ -68,6 +71,7 @@ function toggleTheme() {
   const isDark = !document.documentElement.classList.contains("dark");
   applyTheme(isDark);
   storage.prefs.setTheme(isDark ? "dark" : "light");
+  syncSettings();
 }
 
 const SUN_ICON = `
@@ -90,11 +94,11 @@ function updateThemeIcon(isDark: boolean) {
 }
 
 // ---------- 長輩模式（原 senior-2048）----------
-// 網址帶 ?senior=1 或 ?senior=0 時會覆寫並記住設定
+// 第一次打開預設開啟；網址帶 ?senior=1 或 ?senior=0 時會覆寫並記住設定
 function initSenior() {
   const param = new URLSearchParams(location.search).get("senior");
   if (param === "1" || param === "0") storage.prefs.setSenior(param === "1");
-  applySenior(storage.prefs.getSenior());
+  applySenior(storage.prefs.getSenior() ?? true);
 }
 
 function toggleSenior() {
@@ -107,6 +111,29 @@ function applySenior(on: boolean) {
   document.body.classList.toggle("senior-mode", on);
   for (const btn of document.querySelectorAll(".senior-btn")) btn.setAttribute("aria-pressed", String(on));
   for (const t of tiles) t.el.style.fontSize = tileFontSize(t.val, gridSize, isSenior);
+  syncSettings();
+}
+
+// ---------- 設定 ----------
+function syncSettings() {
+  const states: Record<string, boolean> = {
+    senior: isSenior,
+    sound: !sfx.muted,
+    dark: document.documentElement.classList.contains("dark"),
+  };
+  for (const row of document.querySelectorAll<HTMLElement>("[data-setting]")) {
+    row.setAttribute("aria-pressed", String(states[row.dataset.setting ?? ""] ?? false));
+  }
+  for (const btn of document.querySelectorAll<HTMLElement>(".size-btn")) {
+    btn.setAttribute("aria-pressed", String(Number(btn.dataset.size) === gridSize));
+  }
+  $<HTMLSelectElement>("grid-size-select").value = String(gridSize);
+}
+
+function openSettings() {
+  syncSettings();
+  $("install-setting").hidden = isStandalone();
+  $<HTMLDialogElement>("settings-dialog").showModal();
 }
 
 // ---------- 靜音 ----------
@@ -121,6 +148,7 @@ function toggleMute() {
   sfx.muted = !sfx.muted;
   storage.prefs.setMuted(sfx.muted);
   updateMuteIcon(sfx.muted);
+  syncSettings();
 }
 
 function updateMuteIcon(isMuted: boolean) {
@@ -187,6 +215,9 @@ function snapshot(): SavedState {
 
 // ---------- 遊戲流程 ----------
 function restartGame() {
+  // 中途重來也算玩了一局（遊戲結束時已經記過就不重複）
+  if (score > 0 && !isOver) saveStats(recordGameEnd(stats, dayKey(new Date()), score));
+
   tiles = [];
   score = 0;
   isOver = false;
@@ -249,6 +280,7 @@ function move(dir: Direction) {
   } else {
     sfx.playSlide();
   }
+  saveStats(recordScore(stats, dayKey(new Date()), score));
 
   setTimeout(() => {
     const removed = new Set(result.removed);
@@ -269,6 +301,7 @@ function move(dir: Direction) {
       confetti.start(4000);
     } else if (isGameOver(tiles, gridSize)) {
       isOver = true;
+      saveStats(recordGameEnd(stats, dayKey(new Date()), score));
       showMessage("遊戲結束", score, false);
       sfx.playGameOver();
     }
@@ -283,13 +316,18 @@ function continueGame() {
 }
 
 function changeGridSize(size: number) {
+  if (size === gridSize) return;
   gridSize = size;
+  // 上一個棋盤的進度已存檔，不算中途放棄
+  score = 0;
+  isOver = false;
   tileLayer.innerHTML = "";
   tiles = [];
   historyStack = [];
   initBoardBackground();
   loadHighScores();
   if (!loadActiveGame()) restartGame();
+  syncSettings();
 }
 
 // ---------- 分數與訊息 ----------
@@ -352,11 +390,14 @@ function promptForName(finalScore: number) {
   const dialog = $<HTMLDialogElement>("name-entry-dialog");
   $("entry-score").textContent = String(finalScore);
   const nameInput = $<HTMLInputElement>("player-name-input");
-  nameInput.value = "";
+  // 帶入上次的名字，長輩不必每次重打
+  nameInput.value = storage.prefs.getLastName();
 
   const handleSave = () => {
     dialog.close();
-    saveLeaderboardRecord(nameInput.value.trim() || "匿名玩家", finalScore);
+    const name = nameInput.value.trim();
+    if (name) storage.prefs.setLastName(name);
+    saveLeaderboardRecord(name || "匿名玩家", finalScore);
   };
   // 用 onxxx 屬性覆寫，避免多次開啟時重複綁定
   $("btn-save-name").onclick = handleSave;
@@ -376,9 +417,56 @@ function saveLeaderboardRecord(name: string, finalScore: number) {
 }
 
 function clearLeaderboard() {
-  if (confirm("確定要清除此棋盤大小的排行榜紀錄嗎？")) {
-    storage.clearRecords(gridSize);
-    loadHighScores();
+  $<HTMLDialogElement>("confirm-clear-dialog").showModal();
+}
+
+function confirmClearOk() {
+  $<HTMLDialogElement>("confirm-clear-dialog").close();
+  storage.clearRecords(gridSize);
+  loadHighScores();
+}
+
+// ---------- 我的紀錄 ----------
+function saveStats(next: typeof stats) {
+  if (next === stats) return;
+  stats = next;
+  storage.setStats(stats);
+  renderStats();
+}
+
+function statBox(label: string, value: string): HTMLElement {
+  const box = document.createElement("div");
+  box.className = "stat";
+  const l = document.createElement("div");
+  l.className = "stat-label";
+  l.textContent = label;
+  const v = document.createElement("div");
+  v.className = "stat-value";
+  v.textContent = value;
+  box.append(l, v);
+  return box;
+}
+
+function renderStats() {
+  const now = new Date();
+  const today = stats[dayKey(now)];
+  const days = streak(stats, now);
+
+  let note = "今天還沒玩，來一局吧！";
+  if (today && days >= 2) note = `已經連續玩 ${days} 天了，真棒！`;
+  else if (today) note = "今天也有動動腦，很好！";
+
+  for (const el of todayStatsEls) {
+    const n = document.createElement("div");
+    n.className = "stat-note";
+    n.textContent = note;
+    el.replaceChildren(
+      statBox("今天玩了", `${today?.games ?? 0} 局`),
+      statBox("今天最高", String(today?.best ?? 0)),
+      statBox("連續天數", `${days} 天`),
+      n,
+    );
+    el.classList.remove("hidden");
   }
 }
 
@@ -430,6 +518,61 @@ function loadActiveGame(): boolean {
   return true;
 }
 
+// ---------- 放到手機桌面（PWA） ----------
+interface InstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+}
+let installPrompt: InstallPromptEvent | null = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  installPrompt = e as InstallPromptEvent;
+});
+
+function isStandalone(): boolean {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
+function isIOS(): boolean {
+  return (
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+  );
+}
+
+function showInstall() {
+  $<HTMLDialogElement>("settings-dialog").close();
+  const ios = isIOS();
+  $("install-steps-ios").classList.toggle("hidden", !ios);
+  $("install-steps-other").classList.toggle("hidden", ios || !!installPrompt);
+  $("install-now-btn").classList.toggle("hidden", ios || !installPrompt);
+  $<HTMLDialogElement>("install-dialog").showModal();
+}
+
+async function installNow() {
+  if (!installPrompt) return;
+  await installPrompt.prompt();
+  installPrompt = null;
+  dismissInstall();
+}
+
+function dismissInstall() {
+  storage.prefs.setInstallHintDismissed();
+  $<HTMLDialogElement>("install-dialog").close();
+}
+
+// 長輩模式、用手機、還沒放到桌面、也還沒按過「知道了」時，主動提示一次
+function maybeShowInstallHint() {
+  if (!isSenior || isStandalone() || storage.prefs.getInstallHintDismissed()) return;
+  if (!window.matchMedia("(pointer: coarse)").matches) return;
+  setTimeout(() => {
+    if (!document.querySelector("dialog[open]")) showInstall();
+  }, 1500);
+}
+
 // ---------- 對話框 ----------
 function toggleRules() {
   const dialog = $<HTMLDialogElement>("rules-dialog");
@@ -476,6 +619,12 @@ const actions: Record<string, () => void> = {
     messageDialog.close();
     restartGame();
   },
+  openSettings,
+  confirmClearOk,
+  showInstall,
+  installNow: () => void installNow(),
+  dismissInstall,
+  laterInstall: () => $<HTMLDialogElement>("install-dialog").close(),
   confirmRestartOk: () => {
     $<HTMLDialogElement>("confirm-restart-dialog").close();
     restartGame();
@@ -483,9 +632,11 @@ const actions: Record<string, () => void> = {
 };
 
 document.addEventListener("click", (e) => {
-  const target = (e.target as HTMLElement).closest<HTMLElement>("[data-action]");
-  const action = target?.dataset.action;
+  const el = e.target as HTMLElement;
+  const action = el.closest<HTMLElement>("[data-action]")?.dataset.action;
   if (action) actions[action]?.();
+  const size = el.closest<HTMLElement>("[data-size]")?.dataset.size;
+  if (size) changeGridSize(Number(size));
 });
 
 $<HTMLSelectElement>("grid-size-select").addEventListener("change", (e) => {
@@ -507,30 +658,49 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// 一般模式只在棋盤上滑動；長輩模式整個畫面都能滑（從「我的紀錄」開始滑則照常捲動頁面）
 let touchStart: { x: number; y: number } | null = null;
 const gameContainer = $("game-container");
-gameContainer.addEventListener(
+
+function swipeAllowedFrom(target: EventTarget | null): boolean {
+  if (document.querySelector("dialog[open]")) return false;
+  if (!(target instanceof Element)) return false;
+  if (gameContainer.contains(target)) return true;
+  return isSenior && !target.closest(".records-area");
+}
+
+document.addEventListener(
   "touchstart",
   (e) => {
-    if (e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchStart =
+      e.touches.length === 1 && swipeAllowedFrom(e.target)
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+        : null;
   },
-  { passive: false },
+  { passive: true },
 );
-gameContainer.addEventListener(
-  "touchend",
+document.addEventListener(
+  "touchmove",
   (e) => {
-    if (!touchStart) return;
-    const dx = e.changedTouches[0].clientX - touchStart.x;
-    const dy = e.changedTouches[0].clientY - touchStart.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
-      if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? "right" : "left");
-      else move(dy > 0 ? "down" : "up");
-    }
-    touchStart = null;
+    if (touchStart) e.preventDefault();
   },
   { passive: false },
 );
-gameContainer.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+document.addEventListener("touchend", (e) => {
+  if (!touchStart) return;
+  const dx = e.changedTouches[0].clientX - touchStart.x;
+  const dy = e.changedTouches[0].clientY - touchStart.y;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
+    if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? "right" : "left");
+    else move(dy > 0 ? "down" : "up");
+  }
+  touchStart = null;
+});
+
+// App 隔夜放在背景，切回來時「今天」要換成新的一天
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) renderStats();
+});
 
 // ---------- 啟動 ----------
 initTheme();
@@ -539,4 +709,7 @@ updateMuteIcon(sfx.muted);
 initBoardBackground();
 loadHighScores();
 initDialogDismissFallback();
+renderStats();
+syncSettings();
 if (!loadActiveGame()) restartGame();
+maybeShowInstallHint();
