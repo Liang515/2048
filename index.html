@@ -27,9 +27,12 @@
     <!-- 頂部標題列：貼齊畫面頂端、捲動時固定（iOS 會把它當成頂部，內容不會被狀態列下方的系統模糊蓋到） -->
     <header class="app-bar">
         <div class="app-bar-inner senior-header">
-            <div class="min-w-0">
-                <h1 id="greeting" class="greeting">午安</h1>
-                <div id="today-date" class="today-date"></div>
+            <div class="app-bar-brand min-w-0">
+                <img src="/2048-96x96.png" alt="" width="42" height="42" class="app-bar-logo" />
+                <div class="min-w-0">
+                    <h1 id="greeting" class="greeting">午安</h1>
+                    <div id="today-date" class="today-date"></div>
+                </div>
             </div>
             <div class="senior-tools">
                 <button data-action="openSettings" class="pill-btn"><svg stroke-linecap="round" stroke-linejoin="round" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>設定</span></button>
@@ -65,25 +68,22 @@
                 </div>
             </div>
 
-            <!-- 按鈕：「重來」小、「上一步」大，放在棋盤上方 -->
-            <div class="flex flex-row md:flex-col gap-2 w-full justify-between items-center md:items-stretch">
-                <!-- 遊戲動作按鈕區 (手機版：兩按鈕併排；桌機版：垂直堆疊) -->
-                <div class="flex flex-row md:flex-col gap-1.5 md:gap-2 flex-1 justify-end md:justify-start">
-                    <button data-action="confirmRestart" class="action-btn restart-btn flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
-                        <svg aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                        重來
-                    </button>
-                    <button id="undo-btn" data-action="undo" class="action-btn flex-1 bg-sky-600 hover:bg-sky-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
-                        <svg aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
-                        上一步
-                    </button>
-                </div>
+            <!-- 按鈕：「重來」小、「上一步」大 -->
+            <div class="action-bar flex flex-row gap-2 w-full items-stretch">
+                <button data-action="confirmRestart" class="action-btn restart-btn flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded-xl active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                    <svg aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    重來
+                </button>
+                <button id="undo-btn" data-action="undo" class="action-btn flex-1 bg-sky-600 hover:bg-sky-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded-xl active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                    <svg aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+                    上一步
+                </button>
             </div>
             
         </div>
  
         <!-- 右側遊戲區 -->
-        <div class="relative flex-shrink-0 flex flex-col items-center">
+        <div class="board-stage relative flex-shrink-0 flex flex-col items-center">
             <div id="game-container" 
                  class="relative shadow-lg" 
                  style="width: min(92vw, 65vh, 500px); height: min(92vw, 65vh, 500px);">
@@ -93,8 +93,9 @@
                     <div id="tile-layer"></div>
                 </div>
             </div>
-            <div class="mobile-hint text-center mt-2 text-stone-400 font-bold text-xs">
-                在畫面任何地方滑動，就能移動方塊
+            <div class="mobile-hint text-center mt-2.5 text-stone-500 dark:text-stone-400 font-bold text-xs">
+                <span class="hint-touch">在畫面任何地方滑動，就能移動方塊</span>
+                <span class="hint-keyboard">使用鍵盤 <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> 方向鍵移動方塊</span>
             </div>
         </div>
  
