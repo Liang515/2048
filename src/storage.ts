@@ -14,6 +14,8 @@ export interface ActiveGame extends SavedState {
   historyStack: SavedState[];
   /** 這局開始時的最高分，用來判斷結束時是否破紀錄（舊存檔沒有這個欄位） */
   startBest?: number;
+  /** 這局已經記到排行榜的那一筆（重開後繼續更新同一筆，不重複記） */
+  record?: { name: string; score: number };
 }
 
 export interface LeaderboardEntry {

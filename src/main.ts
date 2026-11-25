@@ -257,6 +257,8 @@ function move(dir: Direction) {
   updateUndoButton();
   if (result.addedScore > 0) {
     updateScore(score + result.addedScore);
+    // 邊玩邊記：這局一擠進前五名就記上，之後分數變高就更新同一筆，讓她知道紀錄有保存
+    recordToLeaderboard(score);
     sfx.playMerge();
     showScorePop(result.addedScore, visibleScoreEl());
   } else {
@@ -328,6 +330,13 @@ function showScorePop(amount: number, targetEl: HTMLElement) {
   setTimeout(() => pop.remove(), 600);
 }
 
+/** 這局分數超過以前的最高分時，「最高分」框換成金色的「新紀錄！」 */
+function updateRecordBadge() {
+  const isRecord = score > 0 && score > runBest;
+  $("best-card").classList.toggle("is-record", isRecord);
+  $("best-label").textContent = isRecord ? "新紀錄！" : "最高分";
+}
+
 /** 目前畫面上看得到的分數元素（浮動 +分數 要跟著它） */
 function visibleScoreEl(): HTMLElement {
   return [...scoreValueEls].find((el) => el.offsetParent !== null) ?? scoreValueEls[0];
@@ -336,6 +345,7 @@ function visibleScoreEl(): HTMLElement {
 function updateScore(s: number) {
   score = s;
   for (const el of scoreValueEls) el.textContent = score.toLocaleString();
+  updateRecordBadge();
   if (score > storage.getBest(gridSize)) {
     storage.setBest(gridSize, score);
     showBest(score);
@@ -460,6 +470,7 @@ function confirmClearOk() {
   runBest = 0;
   lastRecord = null;
   loadHighScores();
+  updateRecordBadge();
   saveActiveGame();
 }
 
@@ -692,7 +703,12 @@ function renderCardBoard(list: storage.LeaderboardEntry[]) {
 // ---------- 存檔 ----------
 function saveActiveGame() {
   updateUndoButton();
-  storage.saveActiveGame(gridSize, { ...snapshot(), historyStack, startBest: runBest });
+  storage.saveActiveGame(gridSize, {
+    ...snapshot(),
+    historyStack,
+    startBest: runBest,
+    record: lastRecord ?? undefined,
+  });
 }
 
 function loadActiveGame(): boolean {
@@ -707,7 +723,7 @@ function loadActiveGame(): boolean {
   // 載入已結束／已過關的存檔時不再重複跳出排行榜輸入框
   hasSavedThisRun = isOver || (isWon && !hasContinued);
   runBest = state.startBest ?? storage.getBest(gridSize);
-  lastRecord = null;
+  lastRecord = state.record ?? null;
 
   updateScore(score);
   renderTiles(state.tiles);

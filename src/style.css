@@ -731,6 +731,14 @@ body.dark-mode .streak-more {
   line-height: 1.1;
   color: #fff;
 }
+/* 這局正在刷新紀錄：最高分框換成「1024」方塊的金色 */
+.senior-score-card.is-record {
+  background: #946508;
+}
+.senior-score-card.is-record .senior-score-label {
+  color: #fef3c7;
+  font-weight: 900;
+}
 /* 按鈕在棋盤上方：「上一步」大、「重來」小 */
 body.senior-mode .restart-btn {
   flex: 1 1 0% !important;
