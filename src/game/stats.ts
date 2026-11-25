@@ -51,3 +51,22 @@ export function streak(stats: Stats, today: Date): number {
   }
   return count;
 }
+
+export interface DayDot {
+  key: string;
+  /** 0 = 星期日 */
+  weekday: number;
+  played: boolean;
+  isToday: boolean;
+}
+
+/** 以今天為最後一天，往回 n 天的遊玩狀態（打卡圓點用） */
+export function recentDays(stats: Stats, today: Date, n = 7): DayDot[] {
+  const days: DayDot[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    const key = dayKey(d);
+    days.push({ key, weekday: d.getDay(), played: !!stats[key], isToday: i === 0 });
+  }
+  return days;
+}

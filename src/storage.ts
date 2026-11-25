@@ -12,6 +12,8 @@ export interface SavedState {
 
 export interface ActiveGame extends SavedState {
   historyStack: SavedState[];
+  /** 這局開始時的最高分，用來判斷結束時是否破紀錄（舊存檔沒有這個欄位） */
+  startBest?: number;
 }
 
 export interface LeaderboardEntry {
@@ -58,6 +60,9 @@ export const prefs = {
   setSenior: (v: boolean) => set("2048_senior", String(v)),
   getLastName: () => get("2048_last_name") ?? "",
   setLastName: (v: string) => set("2048_last_name", v),
+  /** 第一次打開時問過「要怎麼稱呼你」了沒（略過也算問過） */
+  getNameAsked: () => get("2048_name_asked") === "true",
+  setNameAsked: () => set("2048_name_asked", "true"),
   getInstallHintDismissed: () => get("2048_install_hint_dismissed") === "true",
   setInstallHintDismissed: () => set("2048_install_hint_dismissed", "true"),
 };

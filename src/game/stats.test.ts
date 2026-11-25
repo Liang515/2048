@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayKey, recordGameEnd, recordScore, type Stats, streak } from "./stats";
+import { dayKey, recentDays, recordGameEnd, recordScore, type Stats, streak } from "./stats";
 
 describe("dayKey", () => {
   it("用本地日期補零", () => {
@@ -58,5 +58,20 @@ describe("streak", () => {
 
   it("跨月也能算", () => {
     expect(streak(days("2026-12-01", "2026-11-30"), new Date(2026, 11, 1))).toBe(2);
+  });
+});
+
+describe("recentDays", () => {
+  it("以今天為最後一天，往回七天，標出有玩的日子", () => {
+    const stats: Stats = { "2026-11-25": { games: 1, best: 0 }, "2026-11-23": { games: 2, best: 0 } };
+    const days = recentDays(stats, new Date(2026, 10, 25));
+    expect(days).toHaveLength(7);
+    expect(days[0].key).toBe("2026-11-19");
+    expect(days[6]).toEqual({ key: "2026-11-25", weekday: 3, played: true, isToday: true });
+    expect(days.filter((d) => d.played).map((d) => d.key)).toEqual(["2026-11-23", "2026-11-25"]);
+  });
+
+  it("跨月", () => {
+    expect(recentDays({}, new Date(2026, 11, 2)).map((d) => d.key)[0]).toBe("2026-11-26");
   });
 });

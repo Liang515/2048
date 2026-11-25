@@ -29,8 +29,40 @@
         <!-- 左側資訊區 -->
         <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
             
+            <!-- 長輩模式頂部：問候語、打卡卡片、分數（一般模式隱藏） -->
+            <div class="senior-top">
+                <div class="senior-header">
+                    <div class="min-w-0">
+                        <h1 id="greeting" class="greeting">午安</h1>
+                        <div id="today-date" class="today-date"></div>
+                    </div>
+                    <div class="senior-tools">
+                        <button data-action="openSettings" class="pill-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>設定</span></button>
+                        <button data-action="toggleRules" class="pill-btn pill-help"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg><span>說明</span></button>
+                    </div>
+                </div>
+                <button data-action="openRecords" class="streak-card" aria-label="我的紀錄">
+                    <span class="streak-head">
+                        <span class="streak-title"><svg class="streak-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg><span id="streak-title">今天還沒玩，來一局吧</span><span id="streak-compact" class="streak-compact"></span></span>
+                        <span class="streak-more">我的紀錄 ›</span>
+                    </span>
+                    <span id="week-dots" class="week-dots"></span>
+                    <span id="streak-today" class="streak-today"></span>
+                </button>
+                <div class="senior-scores">
+                    <div class="senior-score-card">
+                        <div class="senior-score-label">分數</div>
+                        <div data-score class="senior-score-value">0</div>
+                    </div>
+                    <div class="senior-score-card">
+                        <div class="senior-score-label">最高分</div>
+                        <div data-best class="senior-score-value">0</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 第一列：Logo與分數板 (手機版併排一列；桌機版Logo單獨一列，分數板在下方) -->
-            <div class="header-row flex justify-between items-center md:items-stretch gap-2">
+            <div class="simple-hide header-row flex justify-between items-center md:items-stretch gap-2">
                 <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-[#776e65] dark:text-[#edc22e] transition-colors duration-300">2048</h1>
                 
                 <!-- 手機版工具按鈕 (在 2048 Logo 旁邊，利用空位) -->
@@ -98,7 +130,7 @@
             </div>
             
             <!-- 桌機版分數板 (手機版隱藏) -->
-            <div class="hidden md:flex gap-3">
+            <div class="simple-hide hidden md:flex gap-3">
                 <div class="score-card bg-stone-400 dark:bg-stone-800 p-2 md:p-3 rounded text-center flex-1 shadow-inner transition-colors duration-300">
                     <div class="score-label text-[#eee4da] dark:text-stone-400 text-xs font-bold uppercase tracking-wider">分數</div>
                     <div id="score" class="text-white text-xl md:text-2xl font-black">0</div>
@@ -127,7 +159,7 @@
 
                 <!-- 遊戲動作按鈕區 (手機版：兩按鈕併排；桌機版：垂直堆疊) -->
                 <div class="flex flex-row md:flex-col gap-1.5 md:gap-2 flex-1 justify-end md:justify-start">
-                    <button data-action="confirmRestart" class="action-btn flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
+                    <button data-action="confirmRestart" class="action-btn restart-btn flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         重來
                     </button>
@@ -138,12 +170,12 @@
                 </div>
             </div>
             
-            <button data-action="toggleRules" class="hidden md:block bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-lg font-bold py-2 rounded shadow-md transition-colors duration-300">
+            <button data-action="toggleRules" class="simple-hide hidden md:block bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-lg font-bold py-2 rounded shadow-md transition-colors duration-300">
                 遊戲說明
             </button>
  
             <!-- 桌面版排行榜 (手機版隱藏) -->
-            <div class="records-area desktop-leaderboard-wrapper hidden md:block leaderboard-container mt-1 md:mt-2 bg-white dark:bg-stone-900 p-3 md:p-4 rounded shadow-sm border border-stone-200 dark:border-stone-800 transition-colors duration-300">
+            <div class="simple-hide records-area desktop-leaderboard-wrapper hidden md:block leaderboard-container mt-1 md:mt-2 bg-white dark:bg-stone-900 p-3 md:p-4 rounded shadow-sm border border-stone-200 dark:border-stone-800 transition-colors duration-300">
                 <div class="flex items-center justify-between border-b pb-2 mb-2 text-stone-600 dark:text-stone-300 font-bold text-sm uppercase tracking-wider">
                     <span>🏆 我的紀錄</span>
                     <button data-action="clearLeaderboard" class="simple-hide text-xs text-red-500 hover:text-red-600 font-bold transition-colors">清除</button>
@@ -173,7 +205,7 @@
         </div>
  
         <!-- 手機版排行榜 (桌面版隱藏，顯示在遊戲盤下方) -->
-        <div class="records-area mobile-leaderboard-wrapper md:hidden w-full px-1">
+        <div class="simple-hide records-area mobile-leaderboard-wrapper md:hidden w-full px-1">
             <div class="bg-white dark:bg-stone-900 p-3 rounded shadow-sm border border-stone-200 dark:border-stone-800 transition-colors duration-300">
                 <div class="flex items-center justify-between border-b pb-2 mb-2 text-stone-600 dark:text-stone-300 font-bold text-sm uppercase tracking-wide">
                     <span>🏆 我的紀錄</span>
@@ -196,7 +228,7 @@
             </form>
         </h2>
         <ul class="list-decimal pl-5 space-y-2.5 text-stone-600 dark:text-stone-400 mb-6 text-base md:text-lg">
-            <li><strong>滑動</strong>：使用鍵盤方向鍵或在螢幕上滑動，所有方塊會往該方向移動。</li>
+            <li><strong>滑動</strong>：手指在畫面上往上、下、左、右滑（電腦用方向鍵），所有方塊會往那個方向移動。</li>
             <li><strong>合併</strong>：兩個相同數字的方塊相撞時會合併相加（例如：2+2=4, 4+4=8...）。</li>
             <li><strong>勝利</strong>：不斷合併，組出 <strong>2048</strong> 方塊即獲得勝利！</li>
             <li><strong>難度</strong>：可以隨時在<strong>「設定」</strong>（或一般模式的左側選單）切換棋盤大小。不同棋盤大小的最高紀錄與存檔都是獨立計算的喔！</li>
@@ -268,6 +300,9 @@
     <dialog id="settings-dialog" closedby="any" aria-labelledby="settings-dialog-title" class="rounded-lg max-w-md w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl focus:outline-none p-6 text-stone-700 dark:text-stone-200 transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
         <h2 id="settings-dialog-title" class="text-2xl font-black mb-4 border-b dark:border-stone-800 pb-2">設定</h2>
         <div class="settings-list flex flex-col gap-3 mb-6">
+            <button data-action="openHello" class="setting-row">
+                <span>怎麼稱呼你</span><span><span id="setting-name" class="setting-name"></span> ›</span>
+            </button>
             <button data-action="toggleSenior" class="setting-row" aria-pressed="false" data-setting="senior">
                 <span>大字模式</span><span class="setting-state"></span>
             </button>
@@ -327,6 +362,51 @@
             <button id="install-now-btn" data-action="installNow" class="hidden w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded font-bold text-lg shadow-md">放到桌面</button>
             <button id="install-dismiss-btn" data-action="dismissInstall" class="w-full bg-[#8f7a66] hover:bg-[#806c59] text-white py-3 rounded font-bold text-lg shadow-md">知道了</button>
             <button data-action="laterInstall" class="w-full text-stone-500 dark:text-stone-400 py-2 font-bold underline">下次再說</button>
+        </div>
+    </dialog>
+
+    <!-- 我的紀錄（長輩模式） -->
+    <dialog id="records-dialog" closedby="any" aria-labelledby="records-dialog-title" class="rounded-lg max-w-md w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl focus:outline-none p-6 text-stone-700 dark:text-stone-200 transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="records-dialog-title" class="text-2xl font-black mb-4 border-b dark:border-stone-800 pb-2">我的紀錄</h2>
+        <div class="today-stats records-row hidden"></div>
+        <h3 class="records-board-title">排行榜（<span id="records-size">4×4</span>）</h3>
+        <ul class="leaderboard-list space-y-1 text-stone-600 dark:text-stone-300 mb-6"></ul>
+        <form method="dialog" class="w-full">
+            <button class="w-full bg-[#8f7a66] hover:bg-[#806c59] text-white py-3 rounded font-bold text-lg cursor-pointer transition-colors shadow-md">關閉</button>
+        </form>
+    </dialog>
+
+    <!-- 怎麼稱呼你 -->
+    <dialog id="hello-dialog" aria-labelledby="hello-dialog-title" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="hello-dialog-title" class="text-2xl font-black mb-2">要怎麼稱呼你？</h2>
+        <p class="mb-4 text-stone-600 dark:text-stone-300 leading-relaxed">會顯示在最上面的問候語，破紀錄時也會用這個名字。</p>
+        <label for="hello-name-input" class="sr-only">稱呼</label>
+        <input type="text" id="hello-name-input" maxlength="8" placeholder="例如：媽媽" autocomplete="nickname" class="w-full p-3 mb-5 border border-stone-300 dark:border-stone-700 rounded bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200 outline-none focus:border-blue-500 font-bold text-xl shadow-inner">
+        <div class="flex flex-col gap-3">
+            <button data-action="saveHello" class="w-full bg-sky-700 hover:bg-sky-800 text-white py-3 rounded font-bold text-lg shadow-md">好</button>
+            <button data-action="skipHello" class="w-full text-stone-600 dark:text-stone-300 py-2 font-bold underline">略過</button>
+        </div>
+    </dialog>
+
+    <!-- 一局結束（長輩模式） -->
+    <dialog id="result-dialog" aria-labelledby="result-title" class="result-dialog rounded-2xl max-w-sm w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl text-stone-800 dark:text-stone-100 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <div class="result-body">
+            <div id="result-badge" class="result-badge" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M17 5h3v2a3 3 0 0 1-3 3"></path><path d="M7 5H4v2a3 3 0 0 0 3 3"></path></svg><span>新紀錄！</span></div>
+            <h2 id="result-title" class="result-title">沒有地方可以動了</h2>
+            <p id="result-sub" class="result-sub">退回一步，換個方向試試看？</p>
+            <div id="result-big" class="result-big" hidden></div>
+            <p id="result-gain" class="result-gain" hidden></p>
+            <div id="result-stats" class="result-stats">
+                <div class="result-stat"><div class="result-stat-label">這局分數</div><div id="result-score" class="result-stat-value">0</div></div>
+                <div class="result-stat"><div class="result-stat-label">今天第幾局</div><div id="result-games" class="result-stat-value">1</div></div>
+            </div>
+            <div id="result-board" class="result-board" hidden>
+                <span id="result-board-text"></span>
+                <button id="result-board-btn" data-action="renameRecord" class="result-link"></button>
+            </div>
+            <div id="result-streak" class="result-streak" hidden></div>
+            <button data-action="undoResult" class="result-primary"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg><span id="result-undo-label">上一步</span></button>
+            <button data-action="restartResult" class="result-secondary">再玩一局</button>
         </div>
     </dialog>
 
