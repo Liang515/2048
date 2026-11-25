@@ -227,6 +227,11 @@ function addRandomTile() {
   createTile(Math.random() < 0.9 ? 2 : 4, pos.r, pos.c, true);
 }
 
+/** 沒有步數可以退時，「上一步」顯示為不能按 */
+function updateUndoButton() {
+  $<HTMLButtonElement>("undo-btn").disabled = historyStack.length === 0;
+}
+
 function snapshot(): SavedState {
   return {
     score,
@@ -275,6 +280,7 @@ function restartGame() {
   addRandomTile();
 
   storage.clearActiveGame(gridSize);
+  updateUndoButton();
 }
 
 function undo() {
@@ -314,6 +320,7 @@ function move(dir: Direction) {
   }
 
   historyStack.push(before);
+  updateUndoButton();
   if (result.addedScore > 0) {
     updateScore(score + result.addedScore);
     sfx.playMerge();
@@ -338,9 +345,13 @@ function move(dir: Direction) {
     addRandomTile();
 
     if (isWon && !hasContinued) {
-      showMessage("恭喜過關!", score, true);
-      sfx.playVictory();
-      confetti.start(4000);
+      if (isSenior) {
+        showResult({ won: true });
+      } else {
+        showMessage("恭喜過關!", score, true);
+        sfx.playVictory();
+        confetti.start(4000);
+      }
     } else if (isGameOver(tiles, gridSize)) {
       isOver = true;
       saveStats(recordGameEnd(stats, dayKey(new Date()), score));
@@ -506,7 +517,11 @@ function clearLeaderboard() {
 function confirmClearOk() {
   $<HTMLDialogElement>("confirm-clear-dialog").close();
   storage.clearRecords(gridSize);
+  // 紀錄清掉後，這局從零開始比，結束時才會正確判斷破紀錄
+  runBest = 0;
+  lastRecord = null;
   loadHighScores();
+  saveActiveGame();
 }
 
 // ---------- 我的紀錄 ----------
@@ -597,14 +612,18 @@ function openHello() {
 }
 
 function closeHello() {
-  storage.prefs.setNameAsked();
   $<HTMLDialogElement>("hello-dialog").close();
+}
+
+// 不論按「好」「略過」、Esc 或 Android 返回鍵關掉，都記為問過
+$<HTMLDialogElement>("hello-dialog").addEventListener("close", () => {
+  storage.prefs.setNameAsked();
   renderGreeting();
   if (helloIsFirstRun) {
     helloIsFirstRun = false;
     maybeShowInstallHint();
   }
-}
+});
 
 function saveHello() {
   storage.prefs.setLastName($<HTMLInputElement>("hello-name-input").value.trim());
@@ -629,28 +648,37 @@ function updateResultBoard() {
   }
 }
 
-function showResult() {
+function showResult({ won = false, quiet = false }: { won?: boolean; quiet?: boolean } = {}) {
   const now = new Date();
   const isRecord = score > runBest;
-  const games = stats[dayKey(now)]?.games ?? 1;
+  const celebrate = won || isRecord;
+  // 一局結束時已經記過這一局；過關時這局還在進行，要把它算進去
+  const gamesSoFar = stats[dayKey(now)]?.games ?? 0;
+  const games = won ? gamesSoFar + 1 : Math.max(gamesSoFar, 1);
   const days = streak(stats, now);
 
-  $("result-badge").hidden = !isRecord;
-  $("result-title").textContent = isRecord ? "這局拿到" : "沒有地方可以動了";
-  $("result-sub").hidden = isRecord;
-  $("result-big").hidden = !isRecord;
+  $("result-badge").hidden = !celebrate;
+  $("result-badge-text").textContent = won ? "拼出 2048 了！" : "新紀錄！";
+  $("result-title").textContent = won ? "太厲害了！這局拿到" : isRecord ? "這局拿到" : "沒有地方可以動了";
+  $("result-sub").hidden = celebrate;
+  $("result-big").hidden = !celebrate;
   $("result-big").textContent = score.toLocaleString();
   $("result-gain").hidden = !isRecord;
   $("result-gain").textContent =
     runBest > 0
       ? `比之前的最高分 ${runBest.toLocaleString()} 多了 ${(score - runBest).toLocaleString()} 分，太厲害了！`
       : "這是你的第一個紀錄！";
-  $("result-stats").hidden = isRecord;
+  $("result-stats").hidden = celebrate;
   $("result-score").textContent = score.toLocaleString();
   $("result-games").textContent = String(games);
-  $("result-streak").hidden = !isRecord;
+  $("result-streak").hidden = !celebrate;
   $("result-streak").textContent = days >= 2 ? `今天第 ${games} 局・連續玩 ${days} 天` : `今天第 ${games} 局`;
-  $("result-undo-label").textContent = isRecord ? "上一步，繼續拚" : "上一步";
+
+  // 過關時主要按鈕是「繼續挑戰」；沒步可走時是「上一步」
+  const primary = $("result-primary");
+  primary.dataset.action = won ? "continueResult" : "undoResult";
+  primary.classList.toggle("no-icon", won);
+  $("result-undo-label").textContent = won ? "繼續挑戰" : isRecord ? "上一步，繼續拚" : "上一步";
 
   // 擠進前五名：有名字就直接記上，沒有名字再請她寫
   const board = $("result-board");
@@ -673,9 +701,10 @@ function showResult() {
   updateResultBoard();
 
   if (!resultDialog.open) resultDialog.showModal();
-  if (isRecord) {
+  if (quiet) return;
+  if (celebrate) {
     sfx.playVictory();
-    confetti.start(3000);
+    confetti.start(won ? 4000 : 3000);
   } else {
     sfx.playGameOver();
   }
@@ -712,6 +741,7 @@ function updateLeaderboardUI(list: storage.LeaderboardEntry[]) {
 
 // ---------- 存檔 ----------
 function saveActiveGame() {
+  updateUndoButton();
   storage.saveActiveGame(gridSize, { ...snapshot(), historyStack, startBest: runBest });
 }
 
@@ -731,11 +761,16 @@ function loadActiveGame(): boolean {
 
   updateScore(score);
   renderTiles(state.tiles);
+  updateUndoButton();
 
+  // 重新載入已結束的局：照樣顯示結束畫面，但不再放音效與彩帶
   if (isOver) {
-    if (isSenior) showResult();
+    if (isSenior) showResult({ quiet: true });
     else showMessage("遊戲結束", score, false);
-  } else if (isWon && !hasContinued) showMessage("恭喜過關!", score, true);
+  } else if (isWon && !hasContinued) {
+    if (isSenior) showResult({ won: true, quiet: true });
+    else showMessage("恭喜過關!", score, true);
+  }
   return true;
 }
 
@@ -853,6 +888,10 @@ const actions: Record<string, () => void> = {
     resultDialog.close();
     undo();
   },
+  continueResult: () => {
+    resultDialog.close();
+    continueGame();
+  },
   restartResult: () => {
     resultDialog.close();
     restartGame();
@@ -911,6 +950,8 @@ function swipeAllowedFrom(target: EventTarget | null): boolean {
 document.addEventListener(
   "touchstart",
   (e) => {
+    // 幽靈點擊只會發生在放開手指的當下；下一次摸螢幕時就不再擋，避免吃掉真正的點擊
+    suppressClickUntil = 0;
     const target = e.target;
     touchStart =
       e.touches.length === 1 && swipeAllowedFrom(target)

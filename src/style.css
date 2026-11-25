@@ -75,7 +75,7 @@ body.dark-mode {
   /* Dark Theme */
   --bg-body: #0c0a09;
   --bg-board: #1c1917;
-  --bg-cell: #1e1b18;
+  --bg-cell: #292524;
   --text-color-dark: #fafaf9;
   --text-color-light: #ffffff;
 
@@ -360,40 +360,12 @@ body.senior-mode .simple-only {
   display: inline-flex !important;
 }
 
-body.senior-mode .senior-btn {
-  background-color: #f59e0b !important;
-  border-color: #f59e0b !important;
-  color: #fff !important;
-  font-size: 1.1rem !important;
-  min-height: 40px;
+.result-primary.no-icon svg {
+  display: none;
 }
-body.senior-mode .header-row {
-  flex-wrap: wrap;
-  row-gap: 0.5rem;
-}
-body.senior-mode .tool-btn {
-  padding: 0.6rem !important;
-}
-body.senior-mode .tool-btn svg {
-  width: 24px;
-  height: 24px;
-}
-body.senior-mode .score-label {
-  font-size: 0.8rem !important;
-}
-body.senior-mode:not(.dark-mode) .score-card {
-  background-color: #57534e !important;
-}
-body.senior-mode:not(.dark-mode) .score-card .score-label {
-  color: #f5f5f4 !important;
-}
-body.senior-mode .score-value {
-  font-size: 1.6rem !important;
-  line-height: 1.2;
-}
-body.senior-mode #score,
-body.senior-mode #best-score {
-  font-size: 2.25rem !important;
+#undo-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 body.senior-mode .action-btn {
   font-size: 1.25rem !important;
@@ -413,10 +385,6 @@ body.senior-mode .action-btn svg {
   body.senior-mode .action-btn svg {
     display: none;
   }
-}
-body.senior-mode #grid-size-select {
-  font-size: 1.1rem !important;
-  min-height: 40px;
 }
 body.senior-mode .leaderboard-list {
   font-size: 1.1rem !important;
@@ -729,7 +697,7 @@ body.senior-mode #undo-btn {
   }
 }
 /* 比較矮的手機：打卡卡片收成一行，保住棋盤大小 */
-@media (max-height: 760px) {
+@media (max-width: 767px) and (max-height: 760px) {
   body.senior-mode .week-dots,
   body.senior-mode .streak-today {
     display: none;
@@ -920,5 +888,28 @@ body.dark-mode .result-link {
   }
   .desktop-leaderboard-wrapper {
     display: block !important;
+  }
+  /* 長輩模式橫拿：左欄加寬、打卡卡片收成一行 */
+  body.senior-mode .info-panel {
+    width: 300px !important;
+    gap: 0.5rem !important;
+  }
+  body.senior-mode .senior-top {
+    gap: 0.5rem;
+  }
+  body.senior-mode .week-dots,
+  body.senior-mode .streak-today,
+  body.senior-mode #streak-title,
+  body.senior-mode .streak-more,
+  body.senior-mode .today-date {
+    display: none;
+  }
+  body.senior-mode .streak-compact {
+    display: inline;
+    white-space: nowrap;
+    font-size: 1rem;
+  }
+  body.senior-mode .action-btn {
+    min-height: 48px;
   }
 }
