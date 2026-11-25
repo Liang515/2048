@@ -308,6 +308,12 @@ dialog[open]::backdrop {
   opacity: 1;
 }
 
+/* 頁面從頂端開始排（最上面是標題列），手機的 body 只留左右與底部邊距 */
+body.senior-mode {
+  justify-content: flex-start !important;
+  padding-top: 0 !important;
+}
+
 /* 長輩模式：大字、大按鈕、高對比方塊
  * 淺色配色：每個方塊的文字對比都 ≥ 4.5（WCAG AA），由 src/style.test.ts 檢查 */
 body.senior-mode:not(.dark-mode) {
@@ -369,7 +375,7 @@ body.senior-mode .action-btn svg {
 }
 @media (max-width: 767px) {
   body.senior-mode {
-    padding: 0.75rem !important;
+    padding: 0 0.75rem 0.75rem !important;
   }
   body.senior-mode .action-btn svg {
     display: none;
@@ -704,24 +710,38 @@ body.senior-mode #undo-btn {
   }
 }
 
-/* 從主畫面打開（iOS 26 起狀態列下方有一段系統模糊）：頂部多留空白，問候語不被糊到。
- * 底部提示文字在這裡隱藏（說明裡有），空出的高度剛好抵銷，棋盤大小不變 */
-@media (max-width: 767px) and (display-mode: standalone) {
-  body.senior-mode {
-    padding-top: 2.75rem !important;
-  }
-  body.senior-mode .mobile-hint {
-    display: none;
-  }
-  body.senior-mode #game-container {
-    width: min(94vw, calc(100dvh - 424px), 560px) !important;
-    height: min(94vw, calc(100dvh - 424px), 560px) !important;
+/* 頂部標題列（做法同 NewsLog）：sticky 貼齊頂端、半透明毛玻璃、底線。
+ * iOS 把它當成頁面頂部，內容不會被狀態列下方的系統模糊蓋到 */
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  align-self: stretch;
+  margin: 0 -1rem;
+  padding: 0.6rem 1rem;
+  background: color-mix(in srgb, var(--bg-body) 85%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-border);
+}
+.app-bar-inner {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+body.senior-mode .main-layout {
+  margin-block: auto;
+  padding-top: 0.5rem;
+}
+@media (max-width: 767px) {
+  .app-bar {
+    margin: 0 -0.75rem;
+    padding: 0.25rem 0.75rem;
   }
 }
-@media (max-width: 767px) and (max-height: 760px) and (display-mode: standalone) {
-  body.senior-mode #game-container {
-    width: min(94vw, calc(100dvh - 334px), 560px) !important;
-    height: min(94vw, calc(100dvh - 334px), 560px) !important;
+@media (min-width: 768px) {
+  .app-bar {
+    margin: 0 -1.5rem;
+    padding: 0.75rem 1.5rem;
   }
 }
 
@@ -903,5 +923,9 @@ body.dark-mode .result-link {
   }
   body.senior-mode .action-btn {
     min-height: 48px;
+  }
+  body.senior-mode #game-container {
+    width: min(calc(100dvh - 92px), 500px) !important;
+    height: min(calc(100dvh - 92px), 500px) !important;
   }
 }
