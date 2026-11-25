@@ -798,7 +798,7 @@ body.senior-mode .main-layout {
     padding: 0.25rem 0.75rem;
   }
 }
-/* 桌機／平板橫式排版：貼頂標題列與兩欄遊戲區對齊同一最大寬度，左側加寬並與棋盤垂直置中 */
+/* 桌機／平板橫式排版：貼頂標題列與兩欄遊戲區對齊同一最大寬度；左欄與棋盤等高（頂端、底端對齊），多出的高度給打卡卡片 */
 @media (min-width: 768px) {
   body.senior-mode {
     padding: 0 !important;
@@ -814,7 +814,7 @@ body.senior-mode .main-layout {
   body.senior-mode .main-layout {
     display: grid;
     grid-template-columns: minmax(272px, 356px) auto;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     gap: clamp(1.75rem, 4vw, 3.25rem);
     max-inline-size: calc(60rem + 3rem);
@@ -828,15 +828,37 @@ body.senior-mode .main-layout {
     gap: 1rem;
   }
   body.senior-mode .senior-top {
+    flex: 1;
     gap: 1rem;
   }
   body.senior-mode .streak-card {
-    padding: 1.05rem 1.15rem;
+    flex: 1;
+    justify-content: space-evenly;
+    padding: 1.25rem 1.15rem;
     gap: 0.75rem;
   }
+  body.senior-mode .streak-title {
+    font-size: 1.35rem;
+  }
   body.senior-mode .week-dots .dot {
-    inline-size: 32px;
-    block-size: 32px;
+    inline-size: 40px;
+    block-size: 40px;
+    font-size: 1.15rem;
+  }
+  body.senior-mode .week-dots .day-label {
+    font-size: 0.95rem;
+  }
+  body.senior-mode .streak-today {
+    font-size: 1.05rem;
+  }
+  /* 提示文字放到棋盤下方但不佔欄高，左右兩欄才會以棋盤為準等高 */
+  body.senior-mode .board-stage {
+    position: relative;
+  }
+  body.senior-mode .board-stage .mobile-hint {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0;
   }
   body.senior-mode .senior-score-card {
     padding: 0.65rem 0.9rem;
@@ -1025,10 +1047,21 @@ body.dark-mode .result-link {
   .mobile-hint {
     display: none !important;
   }
-  /* 長輩模式橫拿：左欄精簡、打卡卡片收成一行、按鈕維持橫排不浪費高度 */
+  /* 長輩模式橫拿：左欄精簡、打卡卡片收成一行、按鈕維持橫排；左欄與棋盤等高，卡片／分數／按鈕上下平均分布 */
+  body.senior-mode .main-layout {
+    align-items: stretch !important;
+  }
   body.senior-mode .info-panel {
     inline-size: 100% !important;
     gap: 0.5rem !important;
+    justify-content: space-between;
+  }
+  /* 讓卡片、分數、按鈕三者直接成為左欄的子項，平均分布（卡片不拉高） */
+  body.senior-mode .senior-top {
+    display: contents;
+  }
+  body.senior-mode .streak-card {
+    flex: none;
   }
   body.senior-mode .senior-top {
     gap: 0.5rem;
