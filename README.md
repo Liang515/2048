@@ -57,7 +57,7 @@
 
 ```
 index.html            頁面結構
-public/               圖示與 Web App Manifest
+public/               靜態圖示（Web App Manifest 由 vite-plugin-pwa 產生）
 src/main.ts           畫面操作、事件、遊戲流程
 src/game/logic.ts     純遊戲邏輯（含測試 logic.test.ts）
 src/game/stats.ts     每日遊玩紀錄（含測試 stats.test.ts）
@@ -95,4 +95,4 @@ npm run dev        # 開發伺服器，http://localhost:5173
 
 * 本專案基於 **[Gabriele Cirulli](https://github.com/gabrielecirulli/2048)** 的開源專案 《2048》 進行二次開發與最佳化。在此特別致謝原作者的開源貢獻。
 * 原版遊戲概念與設計靈感源自 Asher Vollmer 的 **《Threes!》** 以及 Veewo Land 的 **《1024》**。
-* 本專案採用 **[MIT License](file:///Users/liangchen/Downloads/2048/LICENSE)** 授權條款，您可以自由修改、散佈及使用此程式碼，惟請保留原始著作權宣告與授權許可聲明。
+* 本專案採用 **[MIT License](LICENSE)** 授權條款，您可以自由修改、散佈及使用此程式碼，惟請保留原始著作權宣告與授權許可聲明。

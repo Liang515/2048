@@ -20,6 +20,7 @@
 }
 
 :root {
+  color-scheme: light;
   --font-ui: "Plus Jakarta Sans", "Noto Sans TC", sans-serif;
   --font-tiles: "Outfit", sans-serif;
 
@@ -64,6 +65,10 @@
   --tile-higher-bg: #3c3a32;
   --tile-higher-color: #f9f6f2;
   --tile-higher-glow: #3c3a32;
+}
+
+:root.dark {
+  color-scheme: dark;
 }
 
 body.dark-mode {
@@ -376,6 +381,12 @@ body.senior-mode .tool-btn svg {
 body.senior-mode .score-label {
   font-size: 0.8rem !important;
 }
+body.senior-mode:not(.dark-mode) .score-card {
+  background-color: #57534e !important;
+}
+body.senior-mode:not(.dark-mode) .score-card .score-label {
+  color: #f5f5f4 !important;
+}
 body.senior-mode .score-value {
   font-size: 1.6rem !important;
   line-height: 1.2;
@@ -396,6 +407,9 @@ body.senior-mode .action-btn svg {
   height: 22px;
 }
 @media (max-width: 767px) {
+  body.senior-mode {
+    padding: 0.75rem !important;
+  }
   body.senior-mode .action-btn svg {
     display: none;
   }
@@ -420,6 +434,12 @@ body.senior-mode dialog button {
 body.senior-mode #game-container {
   width: min(94vw, 68vh, 560px) !important;
   height: min(94vw, 68vh, 560px) !important;
+}
+@media (max-width: 767px) {
+  body.senior-mode #game-container {
+    width: min(94vw, 58dvh, 560px) !important;
+    height: min(94vw, 58dvh, 560px) !important;
+  }
 }
 
 /* 我的紀錄 */
@@ -505,6 +525,10 @@ body.senior-mode .records-row .stat-note {
   background: #f59e0b;
   color: #fff;
 }
+body.senior-mode dialog .setting-row {
+  min-height: 56px;
+  font-size: 1.25rem;
+}
 body.senior-mode dialog .size-btn {
   min-height: 48px;
 }
@@ -534,11 +558,15 @@ body.senior-mode dialog .size-btn {
     padding-bottom: 0.25rem !important;
     font-size: 1rem !important;
   }
-  #game-container {
+  #game-container,
+  body.senior-mode #game-container {
     width: 85vh !important;
     height: 85vh !important;
     max-width: 500px;
     max-height: 500px;
+  }
+  .records-row {
+    display: none !important;
   }
   .mobile-hint {
     display: none !important;

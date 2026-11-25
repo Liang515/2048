@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <link rel="icon" type="image/x-icon" href="/2048.ico" />
     <link rel="shortcut icon" type="image/x-icon" href="/2048.ico" />
@@ -12,6 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f5f5f4" />
     <title>2048</title>
 
@@ -23,7 +24,7 @@
 <body class="flex flex-col items-center justify-center min-h-screen p-4 md:p-6 transition-colors duration-300">
     <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-[9999] hidden"></canvas>
 
-     <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-6">
+     <div class="main-layout w-full max-w-5xl flex flex-col md:flex-row md:items-start md:justify-center md:gap-12 gap-3">
         
         <!-- 左側資訊區 -->
         <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
@@ -54,11 +55,11 @@
 
                 <!-- 手機版分數板 (桌機版隱藏) -->
                 <div class="flex md:hidden gap-2">
-                    <div class="bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
+                    <div class="score-card bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
                         <div class="text-[#eee4da] dark:text-stone-400 score-label text-[10px] font-bold uppercase tracking-wider">分數</div>
                         <div id="score-mobile" class="score-value text-white text-base font-black">0</div>
                     </div>
-                    <div class="bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
+                    <div class="score-card bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
                         <div class="text-[#eee4da] dark:text-stone-400 score-label text-[10px] font-bold uppercase tracking-wider">最高分</div>
                         <div id="best-score-mobile" class="score-value text-white text-base font-black">0</div>
                     </div>
@@ -98,12 +99,12 @@
             
             <!-- 桌機版分數板 (手機版隱藏) -->
             <div class="hidden md:flex gap-3">
-                <div class="bg-stone-400 dark:bg-stone-800 p-2 md:p-3 rounded text-center flex-1 shadow-inner transition-colors duration-300">
-                    <div class="text-[#eee4da] dark:text-stone-400 text-xs font-bold uppercase tracking-wider">分數</div>
+                <div class="score-card bg-stone-400 dark:bg-stone-800 p-2 md:p-3 rounded text-center flex-1 shadow-inner transition-colors duration-300">
+                    <div class="score-label text-[#eee4da] dark:text-stone-400 text-xs font-bold uppercase tracking-wider">分數</div>
                     <div id="score" class="text-white text-xl md:text-2xl font-black">0</div>
                 </div>
-                <div class="bg-stone-400 dark:bg-stone-800 p-2 md:p-3 rounded text-center flex-1 shadow-inner transition-colors duration-300">
-                    <div class="text-[#eee4da] dark:text-stone-400 text-xs font-bold uppercase tracking-wider">最高分</div>
+                <div class="score-card bg-stone-400 dark:bg-stone-800 p-2 md:p-3 rounded text-center flex-1 shadow-inner transition-colors duration-300">
+                    <div class="score-label text-[#eee4da] dark:text-stone-400 text-xs font-bold uppercase tracking-wider">最高分</div>
                     <div id="best-score" class="text-white text-xl md:text-2xl font-black">0</div>
                 </div>
             </div>
@@ -187,18 +188,18 @@
     </div>
 
     <!-- 規則說明原生對話框 -->
-    <dialog id="rules-dialog" closedby="any" class="rounded-lg max-w-md w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl focus:outline-none p-6 text-stone-700 dark:text-stone-200 transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
-        <h2 class="text-2xl font-black mb-4 border-b dark:border-stone-800 pb-2 flex justify-between items-center">
+    <dialog id="rules-dialog" closedby="any" aria-labelledby="rules-dialog-title" class="rounded-lg max-w-md w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl focus:outline-none p-6 text-stone-700 dark:text-stone-200 transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="rules-dialog-title" class="text-2xl font-black mb-4 border-b dark:border-stone-800 pb-2 flex justify-between items-center">
             <span>如何遊玩</span>
             <form method="dialog">
-                <button class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-2xl font-bold cursor-pointer">&times;</button>
+                <button aria-label="關閉" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-2xl font-bold cursor-pointer">&times;</button>
             </form>
         </h2>
-        <ul class="list-decimal pl-5 space-y-2.5 text-stone-650 dark:text-stone-405 mb-6 text-base md:text-lg">
+        <ul class="list-decimal pl-5 space-y-2.5 text-stone-600 dark:text-stone-400 mb-6 text-base md:text-lg">
             <li><strong>滑動</strong>：使用鍵盤方向鍵或在螢幕上滑動，所有方塊會往該方向移動。</li>
             <li><strong>合併</strong>：兩個相同數字的方塊相撞時會合併相加（例如：2+2=4, 4+4=8...）。</li>
             <li><strong>勝利</strong>：不斷合併，組出 <strong>2048</strong> 方塊即獲得勝利！</li>
-            <li><strong>難度</strong>：可以隨時在左側選單切換棋盤大小。不同棋盤大小的最高紀錄與存檔都是獨立計算的喔！</li>
+            <li><strong>難度</strong>：可以隨時在<strong>「設定」</strong>（或一般模式的左側選單）切換棋盤大小。不同棋盤大小的最高紀錄與存檔都是獨立計算的喔！</li>
             <li><strong>大字模式</strong>：數字和按鈕都會放大，看得更清楚、更好按。可以在<strong>「設定」</strong>或<strong>「大字」</strong>按鈕開關。</li>
         </ul>
         <form method="dialog" class="w-full">
@@ -209,10 +210,10 @@
     </dialog>
 
     <!-- 狀態訊息原生對話框 -->
-    <dialog id="message-dialog" class="rounded-lg max-w-sm w-full bg-[#eee4da] dark:bg-[#1e1a17] text-[#776e65] dark:text-stone-300 shadow-2xl backdrop-blur-sm focus:outline-none overflow-hidden transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100 border border-stone-300 dark:border-stone-850">
+    <dialog id="message-dialog" closedby="any" aria-labelledby="message-title" class="rounded-lg max-w-sm w-full bg-[#eee4da] dark:bg-[#1e1a17] text-[#776e65] dark:text-stone-300 shadow-2xl backdrop-blur-sm focus:outline-none overflow-hidden transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100 border border-stone-300 dark:border-stone-800">
         <div class="p-6 text-center flex flex-col items-center">
             <h2 id="message-title" class="text-4xl font-extrabold mb-2 text-stone-800 dark:text-stone-100">Game Over!</h2>
-            <p id="message-score" class="text-lg font-bold mb-6 text-stone-600 dark:text-stone-400 font-black">Score: 0</p>
+            <p id="message-score" class="text-lg mb-6 text-stone-600 dark:text-stone-400 font-black">Score: 0</p>
             <div class="flex gap-3 w-full">
                 <button data-action="undoDialog" class="flex-1 bg-[#f67c5f] hover:bg-[#e06547] text-white py-3 rounded font-bold text-lg shadow-md hover:scale-105 active:scale-95 transition-transform">
                     上一步
@@ -228,8 +229,8 @@
     </dialog>
 
     <!-- 排行榜名字輸入對話框 -->
-    <dialog id="name-entry-dialog" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-md w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
-        <h2 class="text-2xl font-black mb-3 flex items-center gap-2">
+    <dialog id="name-entry-dialog" aria-labelledby="name-entry-title" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-md w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="name-entry-title" class="text-2xl font-black mb-3 flex items-center gap-2">
             <span>🏆 恭喜打破紀錄！</span>
         </h2>
         <p class="text-sm mb-4 text-stone-500 dark:text-stone-400">
@@ -244,8 +245,8 @@
     </dialog>
 
     <!-- 重新開始二次確認對話框 -->
-    <dialog id="confirm-restart-dialog" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
-        <h2 class="text-2xl font-black mb-3 flex items-center gap-2 text-red-500 dark:text-red-400">
+    <dialog id="confirm-restart-dialog" closedby="any" aria-labelledby="confirm-restart-title" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="confirm-restart-title" class="text-2xl font-black mb-3 flex items-center gap-2 text-red-500 dark:text-red-400">
             <span>⚠️ 確定要重新開始？</span>
         </h2>
         <p class="text-sm mb-6 text-stone-500 dark:text-stone-400 leading-relaxed font-semibold">
@@ -253,7 +254,7 @@
         </p>
         <div class="flex gap-3">
             <form method="dialog" class="flex-1">
-                <button class="w-full bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-250 py-3 rounded font-bold transition-colors cursor-pointer">
+                <button class="w-full bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 py-3 rounded font-bold transition-colors cursor-pointer">
                     取消
                 </button>
             </form>
@@ -264,8 +265,8 @@
     </dialog>
 
     <!-- 設定對話框（長輩模式把較少用的功能收在這裡） -->
-    <dialog id="settings-dialog" closedby="any" class="rounded-lg max-w-md w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl focus:outline-none p-6 text-stone-700 dark:text-stone-200 transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
-        <h2 class="text-2xl font-black mb-4 border-b dark:border-stone-800 pb-2">設定</h2>
+    <dialog id="settings-dialog" closedby="any" aria-labelledby="settings-dialog-title" class="rounded-lg max-w-md w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl focus:outline-none p-6 text-stone-700 dark:text-stone-200 transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="settings-dialog-title" class="text-2xl font-black mb-4 border-b dark:border-stone-800 pb-2">設定</h2>
         <div class="settings-list flex flex-col gap-3 mb-6">
             <button data-action="toggleSenior" class="setting-row" aria-pressed="false" data-setting="senior">
                 <span>大字模式</span><span class="setting-state"></span>
@@ -298,8 +299,8 @@
     </dialog>
 
     <!-- 清除紀錄二次確認 -->
-    <dialog id="confirm-clear-dialog" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
-        <h2 class="text-2xl font-black mb-3 text-red-500 dark:text-red-400">確定要清除紀錄？</h2>
+    <dialog id="confirm-clear-dialog" closedby="any" aria-labelledby="confirm-clear-title" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="confirm-clear-title" class="text-2xl font-black mb-3 text-red-500 dark:text-red-400">確定要清除紀錄？</h2>
         <p class="text-sm mb-6 text-stone-500 dark:text-stone-400 leading-relaxed font-semibold">這個棋盤大小的排行榜與最高分會被清除，無法復原。</p>
         <div class="flex gap-3">
             <form method="dialog" class="flex-1">
@@ -310,8 +311,8 @@
     </dialog>
 
     <!-- 加到主畫面教學 -->
-    <dialog id="install-dialog" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
-        <h2 class="text-2xl font-black mb-3">把 2048 放到手機桌面</h2>
+    <dialog id="install-dialog" closedby="any" aria-labelledby="install-dialog-title" class="rounded-lg p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-sm w-full shadow-2xl text-stone-700 dark:text-stone-200 focus:outline-none transition-all duration-300 transform scale-95 opacity-0 open:scale-100 open:opacity-100">
+        <h2 id="install-dialog-title" class="text-2xl font-black mb-3">把 2048 放到手機桌面</h2>
         <p class="mb-4 leading-relaxed">放到桌面後，下次點圖示就能直接玩，畫面更大，沒有網路也可以玩。</p>
         <ol id="install-steps-ios" class="hidden list-decimal pl-6 space-y-2 mb-6 leading-relaxed">
             <li>點畫面下方的<strong>「分享」</strong>按鈕（方框加向上箭頭）</li>
@@ -324,7 +325,7 @@
         </ol>
         <div class="flex flex-col gap-3">
             <button id="install-now-btn" data-action="installNow" class="hidden w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded font-bold text-lg shadow-md">放到桌面</button>
-            <button data-action="dismissInstall" class="w-full bg-[#8f7a66] hover:bg-[#806c59] text-white py-3 rounded font-bold text-lg shadow-md">知道了</button>
+            <button id="install-dismiss-btn" data-action="dismissInstall" class="w-full bg-[#8f7a66] hover:bg-[#806c59] text-white py-3 rounded font-bold text-lg shadow-md">知道了</button>
             <button data-action="laterInstall" class="w-full text-stone-500 dark:text-stone-400 py-2 font-bold underline">下次再說</button>
         </div>
     </dialog>

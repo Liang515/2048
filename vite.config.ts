@@ -26,9 +26,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,png,ico,svg,webmanifest}"],
-        // 2048logo.png 頁面沒有用到（1.1MB），不放進離線快取
-        globIgnores: ["**/2048logo.png"],
+        // 圖示與 manifest 已由 includeAssets + manifest 自動納入，這裡只快取建置產物，同時自然排除未使用的 2048logo.png
+        globPatterns: ["**/*.{js,css,html}"],
         runtimeCaching: [
           {
             // Google Fonts 字型檔快取，離線時字型也正常

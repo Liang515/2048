@@ -32,6 +32,8 @@ let isOver = false;
 let isWon = false;
 let hasContinued = false;
 let isAnimating = false;
+let moveTimer: number | null = null;
+let namePromptTimer: number | null = null;
 let idCounter = 0;
 let hasSavedThisRun = false;
 let isSenior = false;
@@ -55,6 +57,7 @@ const todayStatsEls = document.querySelectorAll<HTMLElement>(".today-stats");
 function applyTheme(isDark: boolean) {
   document.documentElement.classList.toggle("dark", isDark);
   document.body.classList.toggle("dark-mode", isDark);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0c0a09" : "#f5f5f4");
   updateThemeIcon(isDark);
 }
 
@@ -132,7 +135,8 @@ function syncSettings() {
 
 function openSettings() {
   syncSettings();
-  $("install-setting").hidden = isStandalone();
+  const canInstall = !isStandalone() && (!!installPrompt || window.matchMedia("(pointer: coarse)").matches || isIOS());
+  $("install-setting").hidden = !canInstall;
   $<HTMLDialogElement>("settings-dialog").showModal();
 }
 
@@ -214,7 +218,20 @@ function snapshot(): SavedState {
 }
 
 // ---------- 遊戲流程 ----------
+function clearPendingTimers() {
+  if (moveTimer !== null) {
+    window.clearTimeout(moveTimer);
+    moveTimer = null;
+  }
+  if (namePromptTimer !== null) {
+    window.clearTimeout(namePromptTimer);
+    namePromptTimer = null;
+  }
+  isAnimating = false;
+}
+
 function restartGame() {
+  clearPendingTimers();
   // 中途重來也算玩了一局（遊戲結束時已經記過就不重複）
   if (score > 0 && !isOver) saveStats(recordGameEnd(stats, dayKey(new Date()), score));
 
@@ -223,7 +240,6 @@ function restartGame() {
   isOver = false;
   isWon = false;
   hasContinued = false;
-  isAnimating = false;
   hasSavedThisRun = false;
   historyStack = [];
 
@@ -242,6 +258,7 @@ function undo() {
   if (isAnimating) return;
   const prev = historyStack.pop();
   if (!prev) return;
+  clearPendingTimers();
 
   score = prev.score;
   isOver = prev.isGameOver;
@@ -276,13 +293,14 @@ function move(dir: Direction) {
   if (result.addedScore > 0) {
     updateScore(score + result.addedScore);
     sfx.playMerge();
-    showScorePop(result.addedScore, scoreEl);
+    showScorePop(result.addedScore, scoreEl.offsetParent !== null ? scoreEl : scoreMobileEl);
   } else {
     sfx.playSlide();
   }
   saveStats(recordScore(stats, dayKey(new Date()), score));
 
-  setTimeout(() => {
+  moveTimer = window.setTimeout(() => {
+    moveTimer = null;
     const removed = new Set(result.removed);
     for (const t of tiles) if (removed.has(t.id)) t.el.remove();
     tiles = tiles.filter((t) => !removed.has(t.id));
@@ -317,6 +335,7 @@ function continueGame() {
 
 function changeGridSize(size: number) {
   if (size === gridSize) return;
+  clearPendingTimers();
   gridSize = size;
   // 上一個棋盤的進度已存檔，不算中途放棄
   score = 0;
@@ -369,7 +388,12 @@ function showMessage(title: string, s: number, isWin: boolean) {
   btnContinue.classList.toggle("hidden-custom", !isWin);
 
   if (!hasSavedThisRun) {
-    if (qualifiesForLeaderboard(s)) setTimeout(() => promptForName(s), 650);
+    if (qualifiesForLeaderboard(s)) {
+      namePromptTimer = window.setTimeout(() => {
+        namePromptTimer = null;
+        if (isOver || (isWon && !hasContinued)) promptForName(s);
+      }, 650);
+    }
     hasSavedThisRun = true;
   }
 }
@@ -381,6 +405,7 @@ function loadHighScores() {
 }
 
 function qualifiesForLeaderboard(finalScore: number): boolean {
+  if (finalScore <= 0) return false;
   const list = storage.getLeaderboard(gridSize);
   if (list.length < 5) return true;
   return finalScore > list[list.length - 1].score;
@@ -508,7 +533,8 @@ function loadActiveGame(): boolean {
   isWon = state.isGameWon;
   hasContinued = state.hasContinued;
   historyStack = state.historyStack ?? [];
-  hasSavedThisRun = false;
+  // 載入已結束／已過關的存檔時不再重複跳出排行榜輸入框
+  hasSavedThisRun = isOver || (isWon && !hasContinued);
 
   updateScore(score);
   renderTiles(state.tiles);
@@ -546,9 +572,11 @@ function isIOS(): boolean {
 function showInstall() {
   $<HTMLDialogElement>("settings-dialog").close();
   const ios = isIOS();
+  const canPrompt = !ios && !!installPrompt;
   $("install-steps-ios").classList.toggle("hidden", !ios);
-  $("install-steps-other").classList.toggle("hidden", ios || !!installPrompt);
-  $("install-now-btn").classList.toggle("hidden", ios || !installPrompt);
+  $("install-steps-other").classList.toggle("hidden", ios || canPrompt);
+  $("install-now-btn").classList.toggle("hidden", !canPrompt);
+  $("install-dismiss-btn").textContent = canPrompt ? "不再提示" : "知道了";
   $<HTMLDialogElement>("install-dialog").showModal();
 }
 
@@ -585,11 +613,12 @@ function confirmRestart() {
   else restartGame();
 }
 
-// 點對話框外面的背景時關閉（名字輸入框除外）
+// 尚未支援 closedby="any" 的瀏覽器（如 Safari），補上點對話框外面背景時關閉
 function initDialogDismissFallback() {
-  for (const dialog of document.querySelectorAll("dialog")) {
+  if ("closedBy" in HTMLDialogElement.prototype) return;
+  for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog[closedby="any"]')) {
     dialog.addEventListener("click", (event) => {
-      if (event.target !== dialog || dialog.id === "name-entry-dialog") return;
+      if (event.target !== dialog) return;
       const rect = dialog.getBoundingClientRect();
       const inside =
         rect.top <= event.clientY &&
@@ -666,6 +695,7 @@ function swipeAllowedFrom(target: EventTarget | null): boolean {
   if (document.querySelector("dialog[open]")) return false;
   if (!(target instanceof Element)) return false;
   if (gameContainer.contains(target)) return true;
+  if (target.closest("button, a, input, select, textarea, label")) return false;
   return isSenior && !target.closest(".records-area");
 }
 
@@ -694,6 +724,9 @@ document.addEventListener("touchend", (e) => {
     if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? "right" : "left");
     else move(dy > 0 ? "down" : "up");
   }
+  touchStart = null;
+});
+document.addEventListener("touchcancel", () => {
   touchStart = null;
 });
 
