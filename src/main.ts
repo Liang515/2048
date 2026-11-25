@@ -289,6 +289,7 @@ function move(dir: Direction) {
 
 function continueGame() {
   hasContinued = true;
+  saveActiveGame();
 }
 
 function changeGridSize(size: number) {
@@ -761,7 +762,6 @@ const actions: Record<string, () => void> = {
   confirmRestart,
   undo,
   clearLeaderboard,
-  continueGame,
   openSettings,
   openRecords,
   openHello,

@@ -6,12 +6,12 @@ describe("greeting", () => {
     expect(greeting("", 7)).toBe("早安");
     expect(greeting("", 11)).toBe("午安");
     expect(greeting("", 17)).toBe("午安");
-    expect(greeting("", 18)).toBe("晚上好");
-    expect(greeting("", 2)).toBe("晚上好");
+    expect(greeting("", 18)).toBe("晚安");
+    expect(greeting("", 2)).toBe("晚安");
   });
 
   it("有名字時加在前面，沒名字（或只有空白）時只有問候語", () => {
-    expect(greeting("媽媽", 14)).toBe("媽媽，午安");
+    expect(greeting("小明", 14)).toBe("小明，午安");
     expect(greeting("  ", 14)).toBe("午安");
   });
 });

@@ -6,9 +6,9 @@ export function weekdayLabel(weekday: number): string {
   return WEEKDAYS[weekday];
 }
 
-/** 早安（5–11 點）、午安（11–18 點）、晚上好（其他時間）；有名字時加在前面 */
+/** 早安（5–11 點）、午安（11–18 點）、晚安（其他時間）；有名字時加在前面 */
 export function greeting(name: string, hour: number): string {
-  const word = hour >= 5 && hour < 11 ? "早安" : hour >= 11 && hour < 18 ? "午安" : "晚上好";
+  const word = hour >= 5 && hour < 11 ? "早安" : hour >= 11 && hour < 18 ? "午安" : "晚安";
   const trimmed = name.trim();
   return trimmed ? `${trimmed}，${word}` : word;
 }
