@@ -191,8 +191,11 @@ function clearPendingTimers() {
 
 function restartGame() {
   clearPendingTimers();
-  // 中途重來也算玩了一局（遊戲結束時已經記過就不重複）
-  if (score > 0 && !isOver) saveStats(recordGameEnd(stats, dayKey(new Date()), score));
+  // 中途重來也算玩了一局，分數也記到排行榜（遊戲結束時已經記過就不重複）
+  if (score > 0 && !isOver) {
+    saveStats(recordGameEnd(stats, dayKey(new Date()), score));
+    recordToLeaderboard(score);
+  }
 
   tiles = [];
   score = 0;
@@ -344,9 +347,29 @@ function showBest(best: number) {
 }
 
 // ---------- 排行榜 ----------
+/** 這一局開始之前的最高分（存檔有記就用；舊存檔沒有時，最高分若就是這局的分數則不算） */
+function bestBeforeCurrentGame(best: number): number {
+  const active = storage.loadActiveGame(gridSize);
+  if (!active) return best;
+  if (active.startBest !== undefined) return active.startBest;
+  return active.score >= best ? 0 : best;
+}
+
+/** 沒有稱呼時排行榜上的名字 */
+const DEFAULT_NAME = "我";
+
 function loadHighScores() {
-  showBest(storage.getBest(gridSize));
-  updateLeaderboardUI(storage.getLeaderboard(gridSize));
+  const best = storage.getBest(gridSize);
+  showBest(best);
+  let list = storage.getLeaderboard(gridSize);
+  // 舊版只有玩到「沒步可走」又有稱呼時才記排行榜；排行榜是空的就把「以前」的最高分補進去。
+  // 最高分在玩的時候會即時更新，所以要扣掉正在玩的這一局，避免這局結束時又記一次
+  const pastBest = bestBeforeCurrentGame(best);
+  if (list.length === 0 && pastBest > 0) {
+    list = [{ name: storage.prefs.getLastName() || DEFAULT_NAME, score: pastBest, date: "" }];
+    storage.setLeaderboard(gridSize, list);
+  }
+  updateLeaderboardUI(list);
 }
 
 function qualifiesForLeaderboard(finalScore: number): boolean {
@@ -398,6 +421,23 @@ function updateLeaderboardScore(record: { name: string; score: number }, newScor
   list.sort((x, y) => y.score - x.score);
   storage.setLeaderboard(gridSize, list);
   updateLeaderboardUI(list);
+}
+
+/** 這局的分數記到排行榜；同一局記過就更新原本那一筆。有記上（或已在榜上）回傳 true */
+function recordToLeaderboard(finalScore: number): boolean {
+  if (lastRecord) {
+    // 同一局按「上一步」後又結束：更新原本那一筆，不重複記
+    if (finalScore > lastRecord.score) {
+      updateLeaderboardScore(lastRecord, finalScore);
+      lastRecord = { ...lastRecord, score: finalScore };
+    }
+    return true;
+  }
+  if (!qualifiesForLeaderboard(finalScore)) return false;
+  const name = storage.prefs.getLastName() || DEFAULT_NAME;
+  saveLeaderboardRecord(name, finalScore);
+  lastRecord = { name, score: finalScore };
+  return true;
 }
 
 function renameLeaderboardRecord(oldName: string, newName: string, finalScore: number) {
@@ -537,14 +577,10 @@ function openRecords() {
 // ---------- 一局結束 ----------
 function updateResultBoard() {
   const board = $("result-board");
-  if (lastRecord) {
-    board.hidden = false;
-    $("result-board-text").textContent = `已經記到排行榜：${lastRecord.name}`;
-    $("result-board-btn").textContent = "改名字";
-  } else if (!board.hidden) {
-    $("result-board-text").textContent = "擠進排行榜了！";
-    $("result-board-btn").textContent = "寫上名字";
-  }
+  if (!lastRecord) return;
+  board.hidden = false;
+  $("result-board-text").textContent = `已經記到排行榜：${lastRecord.name}`;
+  $("result-board-btn").textContent = "改名字";
 }
 
 function showResult({ won = false, quiet = false }: { won?: boolean; quiet?: boolean } = {}) {
@@ -579,22 +615,11 @@ function showResult({ won = false, quiet = false }: { won?: boolean; quiet?: boo
   primary.classList.toggle("no-icon", won);
   $("result-undo-label").textContent = won ? "繼續挑戰" : isRecord ? "上一步，繼續拚" : "上一步";
 
-  // 擠進前五名：有名字就直接記上，沒有名字再請她寫
+  // 擠進前五名就直接記上（沒有稱呼時先記成「我」，可以按「改名字」）
   const board = $("result-board");
   board.hidden = true;
-  if (!hasSavedThisRun && (lastRecord || qualifiesForLeaderboard(score))) {
-    board.hidden = false;
-    const name = storage.prefs.getLastName();
-    if (lastRecord) {
-      // 同一局按「上一步」後又結束：更新原本那一筆，不重複記
-      if (score > lastRecord.score) {
-        updateLeaderboardScore(lastRecord, score);
-        lastRecord = { ...lastRecord, score };
-      }
-    } else if (name) {
-      saveLeaderboardRecord(name, score);
-      lastRecord = { name, score };
-    }
+  if (!hasSavedThisRun) {
+    board.hidden = !recordToLeaderboard(score);
     hasSavedThisRun = true;
   }
   updateResultBoard();
