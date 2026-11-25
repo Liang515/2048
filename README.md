@@ -1,74 +1,49 @@
-# 2048 極致體驗版 🧩
+# 2048（給媽媽玩的版本）
 
-一個基於 TypeScript、Tailwind CSS 與原生 DOM 開發的 2048 網頁遊戲。除了經典的 2048 玩法外，我們特別優化了行動裝置的使用體驗，並加入了豐富的視覺與音效特效，旨在打造極致的遊玩體驗。
+做給媽媽在手機上玩的 2048 網頁版：大字、好按、沒有廣告、離線也能玩。  
+玩法取自 [Gabriele Cirulli](https://github.com/gabrielecirulli/2048) 的經典開源遊戲 2048，這個專案是自己用 TypeScript 與原生 DOM 重寫、一步步針對長輩使用習慣調整出來的練習作品。
 
-👉 **[立即線上遊玩](https://2048-drab.vercel.app)**
+線上試玩：https://2048-drab.vercel.app
 
----
+<p align="center">
+  <img src="docs/screenshot-light.png" alt="淺色模式主畫面" width="260" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshot-dark.png" alt="深色模式主畫面" width="260" />
+</p>
 
-## 🌟 特色亮點
+## 針對長輩做的調整（預設開啟）
 
-### 📱 行動裝置完美優化 (Responsive Mobile UI)
-* **空間黃金分配**：特別針對手機螢幕重新配置版面，將控制按鈕與 Logo 旁空位整合，消除不必要的留白，為棋盤爭取最大顯示空間。
-* **原生手勢支援**：在螢幕任意位置滑動即可流暢移動方塊，無拘無束。
-* **無 Emoji 質感按鈕**：操作按鈕（重來、上一步）全面採用簡約 SVG 向量圖示，完美融合精緻的設計語言。
-* **自動置中對稱**：不論在何種比例的螢幕上，遊戲畫面皆會自動於垂直與水平方向優雅置中。
+- **問候與每日打卡**：頂部顯示時段問候與今天日期，第一次打開可填稱呼（只存在這支手機上）；打卡卡片記錄連續天數、近七天遊玩圓點與今日局數／最高分，點開可看完整紀錄與排行榜。
+- **大字與高對比**：字體、按鈕與棋盤放大，矮螢幕自動收合卡片保住棋盤大小；淺色與深色模式下所有方塊文字對比度皆 ≥ 4.5（WCAG AA，由 `src/style.test.ts` 自動檢查）。
+- **防誤觸操作**：「上一步」放大、「重來」縮小且需二次確認，沒有步數可退時「上一步」會顯示為停用；整個畫面都能滑動，從按鈕起手滑動也只會移動方塊，不會誤按按鈕。
+- **溫和的結束與過關畫面**：無路可走時提示「沒有地方可以動了」，引導退回一步或再玩一局；破紀錄或拼出 2048 時放彩帶並自動以稱呼記入本機排行榜（可改名、同局不重複）。
+- **放到手機桌面（PWA）**：支援加入主畫面與離線遊玩，內建 iPhone／Android 操作說明。
+- **一般模式切換**：可在「設定」切換回一般版面，或透過網址參數 `?senior=0` / `?senior=1` 指定。
 
-### 👴 長輩模式（預設開啟）
-這個專案最初是做給媽媽玩的：大字、好按、**沒有廣告**。
-* **問候與日期**：最上面顯示「媽媽，午安」和今天日期；第一次打開會問「要怎麼稱呼你？」（可略過，名字只存在這支手機上）。
-* **打卡卡片**：「已經連續玩 5 天」加上這週七天的打卡圓點、今天玩了幾局、今天最高分；點一下打開完整的「我的紀錄」與排行榜。矮螢幕會自動收成一行，保住棋盤大小。
-* **按鈕防誤觸**：「上一步」大、「重來」小，都放在棋盤上方，滑動留給下半部；從按鈕上開始滑也只會移動方塊，不會觸發按鈕。
-* **溫和的結束畫面**：「沒有地方可以動了，退回一步試試看？」；破紀錄時放彩帶、顯示多了幾分，並自動用她的名字記到排行榜（可改名字，同一局不會重複記）。
-* **高對比配色**：每個方塊的文字對比都 ≥ 4.5（WCAG AA），深色模式也一樣，由 `src/style.test.ts` 自動檢查。
-* **整個畫面都能滑**、**放到手機桌面**（PWA，離線可玩，附 iPhone／Android 教學）。
-* 網址加 `?senior=0` 可關閉、`?senior=1` 可開啟。本模式整合自原本獨立的 [senior-2048](https://github.com/Liang515/senior-2048) 專案。
-### 🌓 智慧雙色主題 (Smart Dark Mode)
-* **系統自動適應**：預設自動偵測您的作業系統主題（淺色/深色），並即時監聽系統偏好變更進行動態切換。
-* **手動鎖定功能**：提供獨立的主題切換按鈕，一旦手動切換將會鎖定您的偏好（儲存於 `localStorage`），不受系統主題干擾。
-* **元件完美同步**：Tailwind CSS 與自訂 CSS 變數全面同步，確保切換主題時，按鈕、下拉選單、計分板與彈出視窗皆一致變色。
+## 基本功能
 
-### 🔊 互動音效與視覺特效
-* **合成器音效 (Web Audio API)**：免載入外部音訊檔案！直接透過瀏覽器原生音訊合成器，產生存檔/滑動（低頻消逝）、合併（悅耳大三度和弦）、過關（琶音升調）與結束（悲傷減三和弦）等精緻音效。
-* **勝利彩帶特效 (Confetti)**：成功拼湊出 2048 獲勝時，畫面將會噴灑出七彩繽紛的原生 Canvas 物理運動彩帶粒子。
-* **動態浮動分數**：每次得分時，計分板上方將會彈出 `+X` 的浮動上升特效，反饋感十足。
+- 支援 3×3、4×4、5×5、6×6 四種棋盤，各自獨立保存進度、最高分與前五名紀錄（皆存於瀏覽器 `localStorage`）。
+- 支援無限次「上一步」。
+- 跟隨系統深淺色主題，也可手動切換鎖定。
+- 使用 Web Audio API 合成基礎操作音效（可靜音），以及 Canvas 慶祝彩帶。
 
-### ⚙️ 完整遊戲系統
-* **多棋盤尺寸**：支援 **3x3、4x4、5x5、6x6** 四種棋盤。
-* **獨立存檔機制**：每種棋盤大小皆擁有**獨立的自動存檔**，關閉瀏覽器後再次打開即可繼續前一次的進度。
-* **無限上一步 (Undo)**：支援無限次數的「上一步」回退，容錯率百分百！
-* **本地排行榜**：自動記錄每種棋盤大小前五名的歷史最高分，並提供自訂名字輸入框以登入榮譽榜。
+## 技術與專案結構
 
----
+使用 Vite + TypeScript（strict）+ Tailwind CSS v4 + Biome + Vitest + vite-plugin-pwa，部署於 Vercel。
 
-## 🛠️ 技術棧
-
-* **建置工具**：Vite + TypeScript（strict 模式），不使用前端框架，畫面以原生 DOM 操作
-* **樣式框架**：Tailwind CSS v4（建置時產生，`dark:` 以 `<html class="dark">` 切換）
-* **核心邏輯**：`src/game/logic.ts` 為純函式（移動、合併、結束判斷、字級），以 Vitest 單元測試
-* **音效處理**：Web Audio API Oscillator (振盪器) 與 Gain (增益節點)
-* **動畫與特效**：HTML5 Canvas (Confetti) & CSS Keyframe 動畫
-* **程式品質**：Biome（lint + format）
-* **離線與安裝**：vite-plugin-pwa（Service Worker 預先快取）
-* **部署平台**：Vercel（`vercel.json` 指定 Vite 建置，輸出 `dist/`）
-
-### 專案結構
-
-```
-index.html            頁面結構
+```text
+index.html            頁面與對話框結構
 public/               靜態圖示（Web App Manifest 由 vite-plugin-pwa 產生）
-src/main.ts           畫面操作、事件、遊戲流程
-src/game/logic.ts     純遊戲邏輯（含測試 logic.test.ts）
-src/game/stats.ts     每日遊玩紀錄、打卡圓點（含測試 stats.test.ts）
-src/game/greeting.ts  問候語、日期、打卡標題文字（含測試 greeting.test.ts）
-src/storage.ts        localStorage 存取（存檔、排行榜、偏好設定）
-src/effects/          音效與彩帶特效
-src/style.css         Tailwind 與自訂樣式（主題色、長輩模式；對比由 style.test.ts 檢查）
+src/main.ts           畫面操作、事件與遊戲流程
+src/game/logic.ts     移動、合併、結束判斷與字級（純函式＋單元測試）
+src/game/stats.ts     每日局數、連續天數與七天圓點（純函式＋單元測試）
+src/game/greeting.ts  時段問候、日期與打卡標題文字（純函式＋單元測試）
+src/storage.ts        localStorage 存取封裝
+src/effects/          Web Audio 音效與 Canvas 彩帶
+src/style.css         主題色、長輩模式樣式（對比由 style.test.ts 檢查）
 ```
 
----
-
-## 🚀 本地運行指引
+## 本地開發
 
 需要 Node.js 20.19 以上（建議 22）。
 
@@ -76,23 +51,19 @@ src/style.css         Tailwind 與自訂樣式（主題色、長輩模式；對�
 git clone https://github.com/Liang515/2048.git
 cd 2048
 npm install
-npm run dev        # 開發伺服器，http://localhost:5173
+npm run dev
 ```
-
-其他指令：
 
 | 指令 | 用途 |
 | --- | --- |
 | `npm test` | 執行單元測試 |
 | `npm run lint` | Biome 檢查 |
-| `npm run format` | Biome 自動格式化 |
-| `npm run build` | 型別檢查並建置到 `dist/` |
+| `npm run format` | Biome 格式化 |
+| `npm run build` | 型別檢查並建置至 `dist/` |
 | `npm run preview` | 預覽建置結果 |
 
----
+## 致謝與授權
 
-## 📜 授權與致敬 (Licensing & Attribution)
-
-* 本專案基於 **[Gabriele Cirulli](https://github.com/gabrielecirulli/2048)** 的開源專案 《2048》 進行二次開發與最佳化。在此特別致謝原作者的開源貢獻。
-* 原版遊戲概念與設計靈感源自 Asher Vollmer 的 **《Threes!》** 以及 Veewo Land 的 **《1024》**。
-* 本專案採用 **[MIT License](LICENSE)** 授權條款，您可以自由修改、散佈及使用此程式碼，惟請保留原始著作權宣告與授權許可聲明。
+- 遊戲玩法致敬 [Gabriele Cirulli 的 2048](https://github.com/gabrielecirulli/2048)，其原始靈感來自 Asher Vollmer 的《Threes!》與 Veewo Studio 的《1024》。
+- 長輩模式整合自先前獨立建立的 [senior-2048](https://github.com/Liang515/senior-2048)。
+- 本專案採用 [MIT License](LICENSE)。
