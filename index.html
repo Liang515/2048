@@ -226,6 +226,47 @@
             opacity: 1;
         }
 
+        /* 長輩模式：大字、大按鈕、高對比方塊 */
+        body.senior-mode {
+            --tile-2-bg: #f3efe9;
+            --tile-2-color: #5c5247;
+            --tile-4-bg: #ece2d2;
+            --tile-4-color: #4d453c;
+            --tile-8-bg: #e98f4f;
+            --tile-16-bg: #ea7339;
+            --tile-32-bg: #e8502a;
+            --tile-64-bg: #ec2d13;
+            --tile-128-bg: #e6b419;
+            --tile-256-bg: #d5a911;
+            --tile-512-bg: #cc9c0b;
+            --tile-1024-bg: #bd8e05;
+            --tile-2048-bg: #b37f00;
+        }
+        body.dark-mode.senior-mode {
+            --tile-2-bg: #e2e8f0;
+            --tile-4-bg: #a8b4c4;
+        }
+        body.senior-mode .tile { font-weight: 900; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+        body.senior-mode .tile-2, body.senior-mode .tile-4 { text-shadow: none; }
+        body.senior-mode .senior-btn { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; font-size: 1.1rem !important; min-height: 40px; }
+        body.senior-mode .header-row { flex-wrap: wrap; row-gap: 0.5rem; }
+        body.senior-mode .tool-btn { padding: 0.6rem !important; }
+        body.senior-mode .tool-btn svg { width: 24px; height: 24px; }
+        body.senior-mode .score-label { font-size: 0.8rem !important; }
+        body.senior-mode .score-value { font-size: 1.6rem !important; line-height: 1.2; }
+        body.senior-mode #score, body.senior-mode #best-score { font-size: 2.25rem !important; }
+        body.senior-mode .action-btn { font-size: 1.25rem !important; min-height: 56px; padding-left: 0.5rem !important; padding-right: 0.5rem !important; white-space: nowrap; }
+        body.senior-mode .action-btn svg { width: 22px; height: 22px; }
+        @media (max-width: 767px) {
+            body.senior-mode .action-btn svg { display: none; }
+        }
+        body.senior-mode #grid-size-select { font-size: 1.1rem !important; min-height: 40px; }
+        body.senior-mode .leaderboard-list { font-size: 1.1rem !important; }
+        body.senior-mode .mobile-hint { font-size: 1rem !important; }
+        body.senior-mode dialog { font-size: 1.15rem; }
+        body.senior-mode dialog button { min-height: 56px; font-size: 1.25rem !important; }
+        body.senior-mode #game-container { width: min(94vw, 68vh, 560px) !important; height: min(94vw, 68vh, 560px) !important; }
+
         /* 手機橫向模式優化 */
         @media (max-height: 600px) and (orientation: landscape) {
             body { padding: 0.5rem !important; align-items: center !important; }
@@ -250,22 +291,22 @@
         <div class="info-panel w-full md:w-72 flex flex-col gap-3 md:gap-4 flex-shrink-0">
             
             <!-- 第一列：Logo與分數板 (手機版併排一列；桌機版Logo單獨一列，分數板在下方) -->
-            <div class="flex justify-between items-center md:items-stretch gap-2">
+            <div class="header-row flex justify-between items-center md:items-stretch gap-2">
                 <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-[#776e65] dark:text-[#edc22e] transition-colors duration-300">2048</h1>
                 
                 <!-- 手機版工具按鈕 (在 2048 Logo 旁邊，利用空位) -->
                 <div class="flex md:hidden gap-1.5 items-center">
-                    <button id="mute-btn-mobile" onclick="toggleMute()" class="p-1.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="開啟/關閉音效">
+                    <button id="mute-btn-mobile" onclick="toggleMute()" class="tool-btn p-1.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="開啟/關閉音效">
                         <svg id="mute-icon-mobile" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         </svg>
                     </button>
-                    <button id="theme-btn-mobile" onclick="toggleTheme()" class="p-1.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="切換深色/淺色主題">
+                    <button id="theme-btn-mobile" onclick="toggleTheme()" class="tool-btn p-1.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="切換深色/淺色主題">
                         <svg id="theme-icon-mobile" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"></circle>
                         </svg>
                     </button>
-                    <button onclick="toggleRules()" class="p-1.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors" title="遊戲說明">
+                    <button onclick="toggleRules()" class="tool-btn p-1.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors" title="遊戲說明">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                     </button>
                 </div>
@@ -273,26 +314,28 @@
                 <!-- 手機版分數板 (桌機版隱藏) -->
                 <div class="flex md:hidden gap-2">
                     <div class="bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
-                        <div class="text-[#eee4da] dark:text-stone-400 text-[10px] font-bold uppercase tracking-wider">SCORE</div>
-                        <div id="score-mobile" class="text-white text-base font-black">0</div>
+                        <div class="text-[#eee4da] dark:text-stone-400 score-label text-[10px] font-bold uppercase tracking-wider">SCORE</div>
+                        <div id="score-mobile" class="score-value text-white text-base font-black">0</div>
                     </div>
                     <div class="bg-stone-400 dark:bg-stone-800 px-3 py-1.5 rounded text-center min-w-[70px] shadow-inner transition-colors duration-300">
-                        <div class="text-[#eee4da] dark:text-stone-400 text-[10px] font-bold uppercase tracking-wider">BEST</div>
-                        <div id="best-score-mobile" class="text-white text-base font-black">0</div>
+                        <div class="text-[#eee4da] dark:text-stone-400 score-label text-[10px] font-bold uppercase tracking-wider">BEST</div>
+                        <div id="best-score-mobile" class="score-value text-white text-base font-black">0</div>
                     </div>
                 </div>
 
                 <!-- 桌機版工具按鈕 (手機版隱藏) -->
                 <div class="hidden md:flex gap-2 items-center">
                     <!-- 靜音按鈕 -->
-                    <button id="mute-btn" onclick="toggleMute()" class="p-2 rounded-full bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="開啟/關閉音效">
+                    <button id="mute-btn" onclick="toggleMute()" class="tool-btn p-2 rounded-full bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="開啟/關閉音效">
                         <svg id="mute-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                         </svg>
                     </button>
+                    <!-- 長輩模式按鈕 -->
+                    <button onclick="toggleSenior()" class="senior-btn px-3 py-2 rounded-full text-sm font-extrabold bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="長輩模式（大字）" aria-label="長輩模式（大字）" aria-pressed="false">大字</button>
                     <!-- 主題切換按鈕 -->
-                    <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="切換深色/淺色主題">
+                    <button id="theme-btn" onclick="toggleTheme()" class="tool-btn p-2 rounded-full bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-stone-600 dark:text-stone-300" title="切換深色/淺色主題">
                         <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"></circle>
                             <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -325,7 +368,7 @@
                 <!-- 棋盤大小選單 -->
                 <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-2 py-2 md:p-3 rounded flex justify-between items-center gap-1.5 shadow-sm transition-colors duration-300 flex-shrink-0">
                     <span class="hidden md:inline text-xs font-extrabold text-stone-500 dark:text-stone-400 uppercase tracking-wider">棋盤大小</span>
-                    <select id="grid-size-select" onchange="changeGridSize(parseInt(this.value))" class="bg-transparent text-stone-700 dark:text-stone-200 font-bold outline-none cursor-pointer text-xs md:text-sm">
+                    <select id="grid-size-select" aria-label="棋盤大小" onchange="changeGridSize(parseInt(this.value))" class="bg-transparent text-stone-700 dark:text-stone-200 font-bold outline-none cursor-pointer text-xs md:text-sm">
                         <option value="3" class="bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200">3 x 3</option>
                         <option value="4" selected class="bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200">4 x 4</option>
                         <option value="5" class="bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200">5 x 5</option>
@@ -333,13 +376,16 @@
                     </select>
                 </div>
 
+                <!-- 長輩模式按鈕 (手機版；桌機版在上方工具列) -->
+                <button onclick="toggleSenior()" class="senior-btn md:hidden flex-shrink-0 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-200 text-xs font-extrabold px-2.5 py-2 rounded shadow-sm transition-colors" title="長輩模式（大字）" aria-label="長輩模式（大字）" aria-pressed="false">大字</button>
+
                 <!-- 遊戲動作按鈕區 (手機版：兩按鈕併排；桌機版：垂直堆疊) -->
                 <div class="flex flex-row md:flex-col gap-1.5 md:gap-2 flex-1 justify-end md:justify-start">
-                    <button onclick="confirmRestart()" class="flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
+                    <button onclick="confirmRestart()" class="action-btn flex-1 bg-stone-500 hover:bg-red-600 dark:bg-stone-700 dark:hover:bg-red-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         重來
                     </button>
-                    <button id="undo-btn" onclick="undo()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
+                    <button id="undo-btn" onclick="undo()" class="action-btn flex-1 bg-sky-600 hover:bg-sky-700 text-white text-xs md:text-lg font-extrabold px-3 py-2 md:py-3.5 rounded active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
                         上一步
                     </button>
@@ -405,6 +451,7 @@
             <li><strong>合併</strong>：兩個相同數字的方塊相撞時會合併相加（例如：2+2=4, 4+4=8...）。</li>
             <li><strong>勝利</strong>：不斷合併，組出 <strong>2048</strong> 方塊即獲得勝利！</li>
             <li><strong>難度</strong>：可以隨時在左側選單切換棋盤大小。不同棋盤大小的最高紀錄與存檔都是獨立計算的喔！</li>
+            <li><strong>長輩模式</strong>：按<strong>「大字」</strong>按鈕，數字和按鈕都會放大，看得更清楚、更好按。</li>
         </ul>
         <form method="dialog" class="w-full">
             <button class="w-full bg-[#8f7a66] hover:bg-[#806c59] text-white py-3 rounded font-bold text-lg cursor-pointer transition-colors shadow-md">
@@ -736,6 +783,7 @@
         let hasSavedThisRun = false; 
         
         let historyStack = [];
+        let isSenior = false;
         
         const backgroundLayer = document.getElementById('background-layer');
         const tileLayer = document.getElementById('tile-layer');
@@ -749,6 +797,7 @@
 
         // 初始化設定
         initTheme();
+        initSenior();
         updateMuteIcon(sfx.muted);
         initBoardBackground();
         loadHighScores();
@@ -832,6 +881,27 @@
                     `;
                 }
             });
+        }
+
+        // 長輩模式（原 senior-2048）：網址帶 ?senior=1 或 ?senior=0 時會覆寫並記住設定
+        function initSenior() {
+            const param = new URLSearchParams(location.search).get('senior');
+            if (param === '1' || param === '0') {
+                localStorage.setItem('2048_senior', param === '1');
+            }
+            applySenior(localStorage.getItem('2048_senior') === 'true');
+        }
+
+        function toggleSenior() {
+            applySenior(!isSenior);
+            localStorage.setItem('2048_senior', isSenior);
+        }
+
+        function applySenior(on) {
+            isSenior = on;
+            document.body.classList.toggle('senior-mode', on);
+            document.querySelectorAll('.senior-btn').forEach(btn => btn.setAttribute('aria-pressed', on));
+            tiles.forEach(t => t.el.style.fontSize = tileFontSize(t.val));
         }
 
         // 靜音控制
@@ -929,22 +999,9 @@
             const el = document.createElement('div');
             el.className = `tile tile-${val} ${isNew ? 'tile-new' : ''}`;
             
-            // 依棋盤大小與數值字數動態計算字型大小，避免小數字過小或大數字溢出
-            const len = val.toString().length;
-            let baseSize = 2.5; // 預設 4x4
-            if (GRID_SIZE === 3) baseSize = 3.2;
-            else if (GRID_SIZE === 4) baseSize = 2.5;
-            else if (GRID_SIZE === 5) baseSize = 1.9;
-            else if (GRID_SIZE === 6) baseSize = 1.5;
+            el.style.fontSize = tileFontSize(val);
             
-            let scale = 1.0;
-            if (len === 3) scale = 0.8;
-            else if (len === 4) scale = 0.65;
-            else if (len >= 5) scale = 0.5;
-            
-            el.style.fontSize = `${baseSize * scale}rem`;
-            
-            if (val > 8192) {
+            if (val > 2048) {
                 el.classList.add('tile-higher');
             }
             
@@ -955,6 +1012,31 @@
             tiles.push(tile);
             if (isNew) setTimeout(() => el.classList.remove('tile-new'), 200);
             return tile;
+        }
+
+        // 依棋盤大小與數值字數動態計算字型大小，避免小數字過小或大數字溢出
+        function tileFontSize(val) {
+            const len = val.toString().length;
+            let baseSize = 2.5; // 預設 4x4
+            if (GRID_SIZE === 3) baseSize = 3.2;
+            else if (GRID_SIZE === 4) baseSize = 2.5;
+            else if (GRID_SIZE === 5) baseSize = 1.9;
+            else if (GRID_SIZE === 6) baseSize = 1.5;
+
+            let scale = 1.0;
+            if (len === 3) scale = 0.8;
+            else if (len === 4) scale = 0.65;
+            else if (len >= 5) scale = 0.5;
+
+            // 長輩模式：整體放大，但多位數時壓縮比例以免溢出方塊
+            if (isSenior) {
+                baseSize *= 1.2;
+                if (len === 3) scale = 0.75;
+                else if (len === 4) scale = 0.58;
+                else if (len >= 5) scale = 0.45;
+            }
+
+            return `${baseSize * scale}rem`;
         }
 
         function setTilePosition(el, r, c, size = GRID_SIZE) {
