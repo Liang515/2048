@@ -1,0 +1,437 @@
+@import "tailwindcss";
+
+/* 沿用舊版 Tailwind CDN 的行為：dark: 以 <html class="dark"> 切換 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4 相容：預設邊框色與按鈕游標維持 v3 行為 */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+:root {
+  --font-ui: "Plus Jakarta Sans", "Noto Sans TC", sans-serif;
+  --font-tiles: "Outfit", sans-serif;
+
+  /* Light Theme */
+  --bg-body: #f5f5f4;
+  --bg-board: #bbada0;
+  --bg-cell: #cdc1b4;
+  --text-color-dark: #776e65;
+  --text-color-light: #f9f6f2;
+
+  --card-bg: #ffffff;
+  --card-border: #e7e5e4;
+  --text-primary: #44403c;
+  --text-secondary: #78716c;
+
+  --tile-2-bg: #eee4da;
+  --tile-2-color: #776e65;
+  --tile-4-bg: #ede0c8;
+  --tile-4-color: #776e65;
+  --tile-8-bg: #f2b179;
+  --tile-8-color: #f9f6f2;
+  --tile-16-bg: #f59563;
+  --tile-16-color: #f9f6f2;
+  --tile-32-bg: #f67c5f;
+  --tile-32-color: #f9f6f2;
+  --tile-64-bg: #f65e3b;
+  --tile-64-color: #f9f6f2;
+  --tile-128-bg: #edcf72;
+  --tile-128-color: #f9f6f2;
+  --tile-256-bg: #edcc61;
+  --tile-256-color: #f9f6f2;
+  --tile-256-glow: #edcc61;
+  --tile-512-bg: #edc850;
+  --tile-512-color: #f9f6f2;
+  --tile-512-glow: #edc850;
+  --tile-1024-bg: #edc53f;
+  --tile-1024-color: #f9f6f2;
+  --tile-1024-glow: #edc53f;
+  --tile-2048-bg: #edc22e;
+  --tile-2048-color: #f9f6f2;
+  --tile-2048-glow: #edc22e;
+  --tile-higher-bg: #3c3a32;
+  --tile-higher-color: #f9f6f2;
+  --tile-higher-glow: #3c3a32;
+}
+
+body.dark-mode {
+  /* Dark Theme */
+  --bg-body: #0c0a09;
+  --bg-board: #1c1917;
+  --bg-cell: #1e1b18;
+  --text-color-dark: #fafaf9;
+  --text-color-light: #ffffff;
+
+  --card-bg: #1c1917;
+  --card-border: #44403c;
+  --text-primary: #f5f5f4;
+  --text-secondary: #a8a29e;
+
+  --tile-2-bg: #cbd5e1;
+  --tile-2-color: #0f172a;
+  --tile-4-bg: #94a3b8;
+  --tile-4-color: #0f172a;
+  --tile-8-bg: #7c2d12;
+  --tile-8-color: #ffedd5;
+  --tile-16-bg: #9a3412;
+  --tile-16-color: #ffedd5;
+  --tile-32-bg: #b91c1c;
+  --tile-32-color: #fef2f2;
+  --tile-64-bg: #dc2626;
+  --tile-64-color: #fef2f2;
+
+  --tile-128-bg: #0f766e;
+  --tile-128-color: #ccfbf1;
+  --tile-256-bg: #0d9488;
+  --tile-256-color: #ccfbf1;
+  --tile-256-glow: #0d9488;
+  --tile-512-bg: #1d4ed8;
+  --tile-512-color: #dbeafe;
+  --tile-512-glow: #1d4ed8;
+  --tile-1024-bg: #2563eb;
+  --tile-1024-color: #dbeafe;
+  --tile-1024-glow: #2563eb;
+  --tile-2048-bg: #6d28d9;
+  --tile-2048-color: #ede9fe;
+  --tile-2048-glow: #8b5cf6;
+  --tile-higher-bg: #4c1d95;
+  --tile-higher-color: #ede9fe;
+  --tile-higher-glow: #a78bfa;
+}
+
+body {
+  font-family: var(--font-ui);
+  touch-action: pan-y;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  overflow-y: auto;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* 遊戲盤面容器 */
+.game-board-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-board);
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+#background-layer,
+#tile-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.grid-cell,
+.tile {
+  position: absolute;
+  border-radius: 6px;
+}
+
+.grid-cell {
+  background-color: var(--bg-cell);
+  z-index: 1;
+  transition: background-color 0.3s ease;
+}
+
+.tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 800;
+  font-family: var(--font-tiles);
+  line-height: 1;
+  transition:
+    left 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    top 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 10;
+}
+
+/* 顏色主題 */
+.tile-2 {
+  background: var(--tile-2-bg);
+  color: var(--tile-2-color);
+}
+.tile-4 {
+  background: var(--tile-4-bg);
+  color: var(--tile-4-color);
+}
+.tile-8 {
+  background: var(--tile-8-bg);
+  color: var(--tile-8-color);
+}
+.tile-16 {
+  background: var(--tile-16-bg);
+  color: var(--tile-16-color);
+}
+.tile-32 {
+  background: var(--tile-32-bg);
+  color: var(--tile-32-color);
+}
+.tile-64 {
+  background: var(--tile-64-bg);
+  color: var(--tile-64-color);
+}
+.tile-128 {
+  background: var(--tile-128-bg);
+  color: var(--tile-128-color);
+}
+.tile-256 {
+  background: var(--tile-256-bg);
+  color: var(--tile-256-color);
+  box-shadow: 0 0 12px var(--tile-256-glow);
+}
+.tile-512 {
+  background: var(--tile-512-bg);
+  color: var(--tile-512-color);
+  box-shadow: 0 0 16px var(--tile-512-glow);
+}
+.tile-1024 {
+  background: var(--tile-1024-bg);
+  color: var(--tile-1024-color);
+  box-shadow: 0 0 20px var(--tile-1024-glow);
+}
+.tile-2048 {
+  background: var(--tile-2048-bg);
+  color: var(--tile-2048-color);
+  box-shadow: 0 0 24px var(--tile-2048-glow);
+  border: 2px solid #fff;
+}
+.tile-higher {
+  background: var(--tile-higher-bg);
+  color: var(--tile-higher-color);
+  box-shadow: 0 0 28px var(--tile-higher-glow);
+  border: 2px solid #fff;
+}
+
+.tile-new {
+  animation: pop-new 0.15s ease-out backwards;
+  animation-delay: 0.05s;
+}
+.tile-merged {
+  z-index: 20;
+  animation: pop-merge 0.15s ease-out backwards;
+}
+
+@keyframes pop-new {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pop-merge {
+  0% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes score-pop {
+  0% {
+    transform: translate(-50%, 0) scale(0.8);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -20px) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -45px) scale(1);
+    opacity: 0;
+  }
+}
+
+.animate-score-pop {
+  animation: score-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.hidden-custom {
+  display: none !important;
+}
+
+/* 原生 Dialog 樣式 */
+dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  outline: none;
+}
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
+}
+
+/* 長輩模式：大字、大按鈕、高對比方塊 */
+body.senior-mode {
+  --tile-2-bg: #f3efe9;
+  --tile-2-color: #5c5247;
+  --tile-4-bg: #ece2d2;
+  --tile-4-color: #4d453c;
+  --tile-8-bg: #e98f4f;
+  --tile-16-bg: #ea7339;
+  --tile-32-bg: #e8502a;
+  --tile-64-bg: #ec2d13;
+  --tile-128-bg: #e6b419;
+  --tile-256-bg: #d5a911;
+  --tile-512-bg: #cc9c0b;
+  --tile-1024-bg: #bd8e05;
+  --tile-2048-bg: #b37f00;
+}
+body.dark-mode.senior-mode {
+  --tile-2-bg: #e2e8f0;
+  --tile-4-bg: #a8b4c4;
+}
+body.senior-mode .tile {
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+body.senior-mode .tile-2,
+body.senior-mode .tile-4 {
+  text-shadow: none;
+}
+body.senior-mode .senior-btn {
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #fff !important;
+  font-size: 1.1rem !important;
+  min-height: 40px;
+}
+body.senior-mode .header-row {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+body.senior-mode .tool-btn {
+  padding: 0.6rem !important;
+}
+body.senior-mode .tool-btn svg {
+  width: 24px;
+  height: 24px;
+}
+body.senior-mode .score-label {
+  font-size: 0.8rem !important;
+}
+body.senior-mode .score-value {
+  font-size: 1.6rem !important;
+  line-height: 1.2;
+}
+body.senior-mode #score,
+body.senior-mode #best-score {
+  font-size: 2.25rem !important;
+}
+body.senior-mode .action-btn {
+  font-size: 1.25rem !important;
+  min-height: 56px;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  white-space: nowrap;
+}
+body.senior-mode .action-btn svg {
+  width: 22px;
+  height: 22px;
+}
+@media (max-width: 767px) {
+  body.senior-mode .action-btn svg {
+    display: none;
+  }
+}
+body.senior-mode #grid-size-select {
+  font-size: 1.1rem !important;
+  min-height: 40px;
+}
+body.senior-mode .leaderboard-list {
+  font-size: 1.1rem !important;
+}
+body.senior-mode .mobile-hint {
+  font-size: 1rem !important;
+}
+body.senior-mode dialog {
+  font-size: 1.15rem;
+}
+body.senior-mode dialog button {
+  min-height: 56px;
+  font-size: 1.25rem !important;
+}
+body.senior-mode #game-container {
+  width: min(94vw, 68vh, 560px) !important;
+  height: min(94vw, 68vh, 560px) !important;
+}
+
+/* 手機橫向模式優化 */
+@media (max-height: 600px) and (orientation: landscape) {
+  body {
+    padding: 0.5rem !important;
+    align-items: center !important;
+  }
+  .main-layout {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1.5rem !important;
+  }
+  .info-panel {
+    width: 160px !important;
+    gap: 0.5rem !important;
+  }
+  .info-panel h1 {
+    font-size: 2rem !important;
+    line-height: 1 !important;
+  }
+  .info-panel button {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    font-size: 1rem !important;
+  }
+  #game-container {
+    width: 85vh !important;
+    height: 85vh !important;
+    max-width: 500px;
+    max-height: 500px;
+  }
+  .mobile-hint {
+    display: none !important;
+  }
+  /* 橫向時隱藏底部排行榜，顯示側邊排行榜 */
+  .mobile-leaderboard-wrapper {
+    display: none !important;
+  }
+  .desktop-leaderboard-wrapper {
+    display: block !important;
+  }
+}

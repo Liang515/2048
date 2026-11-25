@@ -1,6 +1,6 @@
 # 2048 極致體驗版 🧩
 
-一個基於 HTML5、Tailwind CSS 與原生 JavaScript 開發的 2048 網頁遊戲。除了經典的 2048 玩法外，我們特別優化了行動裝置的使用體驗，並加入了豐富的視覺與音效特效，旨在打造極致的遊玩體驗。
+一個基於 TypeScript、Tailwind CSS 與原生 DOM 開發的 2048 網頁遊戲。除了經典的 2048 玩法外，我們特別優化了行動裝置的使用體驗，並加入了豐富的視覺與音效特效，旨在打造極致的遊玩體驗。
 
 👉 **[立即線上遊玩](https://2048-drab.vercel.app)**
 
@@ -40,33 +40,48 @@
 
 ## 🛠️ 技術棧
 
-* **結構與佈局**：HTML5, CSS3, Flexbox & Grid
-* **樣式框架**：Tailwind CSS (CDN 版本，配置 `darkMode: 'class'`)
-* **核心邏輯**：Vanilla JavaScript (原生 JS 狀態管理與二維矩陣移動算法)
+* **建置工具**：Vite + TypeScript（strict 模式），不使用前端框架，畫面以原生 DOM 操作
+* **樣式框架**：Tailwind CSS v4（建置時產生，`dark:` 以 `<html class="dark">` 切換）
+* **核心邏輯**：`src/game/logic.ts` 為純函式（移動、合併、結束判斷、字級），以 Vitest 單元測試
 * **音效處理**：Web Audio API Oscillator (振盪器) 與 Gain (增益節點)
 * **動畫與特效**：HTML5 Canvas (Confetti) & CSS Keyframe 動畫
-* **部署平台**：Vercel
+* **程式品質**：Biome（lint + format）
+* **部署平台**：Vercel（`vercel.json` 指定 Vite 建置，輸出 `dist/`）
+
+### 專案結構
+
+```
+index.html            頁面結構
+public/               圖示與 Web App Manifest
+src/main.ts           畫面操作、事件、遊戲流程
+src/game/logic.ts     純遊戲邏輯（含測試 logic.test.ts）
+src/storage.ts        localStorage 存取（存檔、排行榜、偏好設定）
+src/effects/          音效與彩帶特效
+src/style.css         Tailwind 與自訂樣式（主題色、長輩模式）
+```
 
 ---
 
 ## 🚀 本地運行指引
 
-由於此專案為純靜態網頁，您可以直接下載並運行：
+需要 Node.js 20.19 以上（建議 22）。
 
-1. 將本專案 Clone 到本地：
-   ```bash
-   git clone https://github.com/Liang515/2048.git
-   ```
-2. 使用本地網頁伺服器開啟以確保最佳相容性（避免瀏覽器因為 `file://` 安全限制而無法載入 Favicon 與 Manifest）：
-   * **Python 快速開啟**：
-     ```bash
-     python -m http.server 8000
-     ```
-     隨後在瀏覽器輸入 `http://localhost:8000` 即可遊玩。
-   * **Node.js (npm) 快速開啟**：
-     ```bash
-     npx serve .
-     ```
+```bash
+git clone https://github.com/Liang515/2048.git
+cd 2048
+npm install
+npm run dev        # 開發伺服器，http://localhost:5173
+```
+
+其他指令：
+
+| 指令 | 用途 |
+| --- | --- |
+| `npm test` | 執行單元測試 |
+| `npm run lint` | Biome 檢查 |
+| `npm run format` | Biome 自動格式化 |
+| `npm run build` | 型別檢查並建置到 `dist/` |
+| `npm run preview` | 預覽建置結果 |
 
 ---
 
