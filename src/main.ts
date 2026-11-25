@@ -34,10 +34,8 @@ let isWon = false;
 let hasContinued = false;
 let isAnimating = false;
 let moveTimer: number | null = null;
-let namePromptTimer: number | null = null;
 let idCounter = 0;
 let hasSavedThisRun = false;
-let isSenior = false;
 let historyStack: SavedState[] = [];
 /** 這局開始時的最高分；結束時分數超過它就是破紀錄 */
 let runBest = 0;
@@ -47,26 +45,23 @@ let stats = storage.getStats();
 
 const backgroundLayer = $("background-layer");
 const tileLayer = $("tile-layer");
-const scoreEl = $("score");
-const scoreMobileEl = $("score-mobile");
-const bestScoreEl = $("best-score");
-const bestScoreMobileEl = $("best-score-mobile");
-const messageDialog = $<HTMLDialogElement>("message-dialog");
-const messageTitle = $("message-title");
-const messageScore = $("message-score");
-const btnContinue = $("btn-continue");
 const leaderboardEls = document.querySelectorAll<HTMLUListElement>(".leaderboard-list");
 const todayStatsEls = document.querySelectorAll<HTMLElement>(".today-stats");
 const scoreValueEls = document.querySelectorAll<HTMLElement>("[data-score]");
 const bestValueEls = document.querySelectorAll<HTMLElement>("[data-best]");
 const resultDialog = $<HTMLDialogElement>("result-dialog");
 
+/** 打開對話框，焦點放在視窗本身，避免第一個按鈕（例如 ×）出現藍色焦點框 */
+function showDialog(dialog: HTMLDialogElement) {
+  dialog.showModal();
+  if (dialog.hasAttribute("autofocus")) dialog.focus();
+}
+
 // ---------- 主題 ----------
 function applyTheme(isDark: boolean) {
   document.documentElement.classList.toggle("dark", isDark);
   document.body.classList.toggle("dark-mode", isDark);
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0c0a09" : "#f5f5f4");
-  updateThemeIcon(isDark);
 }
 
 function initTheme() {
@@ -85,50 +80,9 @@ function toggleTheme() {
   syncSettings();
 }
 
-const SUN_ICON = `
-  <circle cx="12" cy="12" r="5"></circle>
-  <line x1="12" y1="1" x2="12" y2="3"></line>
-  <line x1="12" y1="21" x2="12" y2="23"></line>
-  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-  <line x1="1" y1="12" x2="3" y2="12"></line>
-  <line x1="21" y1="12" x2="23" y2="12"></line>
-  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
-const MOON_ICON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
-
-function updateThemeIcon(isDark: boolean) {
-  for (const id of ["theme-icon", "theme-icon-mobile"]) {
-    const icon = document.getElementById(id);
-    if (icon) icon.innerHTML = isDark ? MOON_ICON : SUN_ICON;
-  }
-}
-
-// ---------- 長輩模式（原 senior-2048）----------
-// 第一次打開預設開啟；網址帶 ?senior=1 或 ?senior=0 時會覆寫並記住設定
-function initSenior() {
-  const param = new URLSearchParams(location.search).get("senior");
-  if (param === "1" || param === "0") storage.prefs.setSenior(param === "1");
-  applySenior(storage.prefs.getSenior() ?? true);
-}
-
-function toggleSenior() {
-  applySenior(!isSenior);
-  storage.prefs.setSenior(isSenior);
-}
-
-function applySenior(on: boolean) {
-  isSenior = on;
-  document.body.classList.toggle("senior-mode", on);
-  for (const btn of document.querySelectorAll(".senior-btn")) btn.setAttribute("aria-pressed", String(on));
-  refreshTileFonts();
-  syncSettings();
-}
-
 // ---------- 設定 ----------
 function syncSettings() {
   const states: Record<string, boolean> = {
-    senior: isSenior,
     sound: !sfx.muted,
     dark: document.documentElement.classList.contains("dark"),
   };
@@ -138,7 +92,6 @@ function syncSettings() {
   for (const btn of document.querySelectorAll<HTMLElement>(".size-btn")) {
     btn.setAttribute("aria-pressed", String(Number(btn.dataset.size) === gridSize));
   }
-  $<HTMLSelectElement>("grid-size-select").value = String(gridSize);
   $("setting-name").textContent = storage.prefs.getLastName() || "未設定";
 }
 
@@ -146,29 +99,14 @@ function openSettings() {
   syncSettings();
   const canInstall = !isStandalone() && (!!installPrompt || window.matchMedia("(pointer: coarse)").matches || isIOS());
   $("install-setting").hidden = !canInstall;
-  $<HTMLDialogElement>("settings-dialog").showModal();
+  showDialog($<HTMLDialogElement>("settings-dialog"));
 }
 
 // ---------- 靜音 ----------
-const SOUND_ON_ICON = `
-  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>`;
-const SOUND_OFF_ICON = `
-  <line x1="1" y1="1" x2="23" y2="23"></line>
-  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>`;
-
 function toggleMute() {
   sfx.muted = !sfx.muted;
   storage.prefs.setMuted(sfx.muted);
-  updateMuteIcon(sfx.muted);
   syncSettings();
-}
-
-function updateMuteIcon(isMuted: boolean) {
-  for (const id of ["mute-icon", "mute-icon-mobile"]) {
-    const icon = document.getElementById(id);
-    if (icon) icon.innerHTML = isMuted ? SOUND_OFF_ICON : SOUND_ON_ICON;
-  }
 }
 
 // ---------- 盤面與方塊 ----------
@@ -176,7 +114,7 @@ function updateMuteIcon(isMuted: boolean) {
 function tileFont(val: number): string {
   const width = $("game-container").clientWidth;
   const scale = width > 0 ? Math.min(1, width / 360) : 1;
-  return `calc(${tileFontSize(val, gridSize, isSenior)} * ${scale.toFixed(3)})`;
+  return `calc(${tileFontSize(val, gridSize, true)} * ${scale.toFixed(3)})`;
 }
 
 function refreshTileFonts() {
@@ -248,10 +186,6 @@ function clearPendingTimers() {
     window.clearTimeout(moveTimer);
     moveTimer = null;
   }
-  if (namePromptTimer !== null) {
-    window.clearTimeout(namePromptTimer);
-    namePromptTimer = null;
-  }
   isAnimating = false;
 }
 
@@ -271,9 +205,7 @@ function restartGame() {
   runBest = storage.getBest(gridSize);
   lastRecord = null;
   updateScore(0);
-  messageDialog.close();
   resultDialog.close();
-  btnContinue.classList.add("hidden-custom");
   tileLayer.innerHTML = "";
 
   addRandomTile();
@@ -296,7 +228,6 @@ function undo() {
   hasSavedThisRun = false;
 
   updateScore(score);
-  messageDialog.close();
   resultDialog.close();
   renderTiles(prev.tiles);
   saveActiveGame();
@@ -345,22 +276,11 @@ function move(dir: Direction) {
     addRandomTile();
 
     if (isWon && !hasContinued) {
-      if (isSenior) {
-        showResult({ won: true });
-      } else {
-        showMessage("恭喜過關!", score, true);
-        sfx.playVictory();
-        confetti.start(4000);
-      }
+      showResult({ won: true });
     } else if (isGameOver(tiles, gridSize)) {
       isOver = true;
       saveStats(recordGameEnd(stats, dayKey(new Date()), score));
-      if (isSenior) {
-        showResult();
-      } else {
-        showMessage("遊戲結束", score, false);
-        sfx.playGameOver();
-      }
+      showResult();
     }
     saveActiveGame();
     isAnimating = false;
@@ -369,7 +289,6 @@ function move(dir: Direction) {
 
 function continueGame() {
   hasContinued = true;
-  messageDialog.close();
 }
 
 function changeGridSize(size: number) {
@@ -407,13 +326,11 @@ function showScorePop(amount: number, targetEl: HTMLElement) {
 
 /** 目前畫面上看得到的分數元素（浮動 +分數 要跟著它） */
 function visibleScoreEl(): HTMLElement {
-  return [scoreEl, scoreMobileEl, ...scoreValueEls].find((el) => el.offsetParent !== null) ?? scoreEl;
+  return [...scoreValueEls].find((el) => el.offsetParent !== null) ?? scoreValueEls[0];
 }
 
 function updateScore(s: number) {
   score = s;
-  scoreEl.textContent = String(score);
-  scoreMobileEl.textContent = String(score);
   for (const el of scoreValueEls) el.textContent = score.toLocaleString();
   if (score > storage.getBest(gridSize)) {
     storage.setBest(gridSize, score);
@@ -422,26 +339,7 @@ function updateScore(s: number) {
 }
 
 function showBest(best: number) {
-  bestScoreEl.textContent = String(best);
-  bestScoreMobileEl.textContent = String(best);
   for (const el of bestValueEls) el.textContent = best.toLocaleString();
-}
-
-function showMessage(title: string, s: number, isWin: boolean) {
-  messageTitle.textContent = title;
-  messageScore.textContent = `得分: ${s}`;
-  if (!messageDialog.open) messageDialog.showModal();
-  btnContinue.classList.toggle("hidden-custom", !isWin);
-
-  if (!hasSavedThisRun) {
-    if (qualifiesForLeaderboard(s)) {
-      namePromptTimer = window.setTimeout(() => {
-        namePromptTimer = null;
-        if (isOver || (isWon && !hasContinued)) promptForName(s);
-      }, 650);
-    }
-    hasSavedThisRun = true;
-  }
 }
 
 // ---------- 排行榜 ----------
@@ -479,7 +377,7 @@ function promptForName(finalScore: number, renameFrom?: string) {
   nameInput.onkeydown = (e) => {
     if (e.key === "Enter") handleSave();
   };
-  dialog.showModal();
+  showDialog(dialog);
 }
 
 function saveLeaderboardRecord(name: string, finalScore: number) {
@@ -511,7 +409,7 @@ function renameLeaderboardRecord(oldName: string, newName: string, finalScore: n
 }
 
 function clearLeaderboard() {
-  $<HTMLDialogElement>("confirm-clear-dialog").showModal();
+  showDialog($<HTMLDialogElement>("confirm-clear-dialog"));
 }
 
 function confirmClearOk() {
@@ -567,7 +465,7 @@ function renderStats() {
     el.classList.remove("hidden");
   }
 
-  // 長輩模式頂部的打卡卡片
+  // 頂部的打卡卡片
   $("streak-title").textContent = streakTitle(days, !!today);
   $("streak-compact").textContent =
     days >= 2 && today ? `連續 ${days} 天・今天 ${today.games} 局` : streakTitle(days, !!today);
@@ -608,7 +506,7 @@ function openHello() {
   input.onkeydown = (e) => {
     if (e.key === "Enter") saveHello();
   };
-  $<HTMLDialogElement>("hello-dialog").showModal();
+  showDialog($<HTMLDialogElement>("hello-dialog"));
 }
 
 function closeHello() {
@@ -632,10 +530,10 @@ function saveHello() {
 
 function openRecords() {
   $("records-size").textContent = `${gridSize}×${gridSize}`;
-  $<HTMLDialogElement>("records-dialog").showModal();
+  showDialog($<HTMLDialogElement>("records-dialog"));
 }
 
-// ---------- 一局結束（長輩模式） ----------
+// ---------- 一局結束 ----------
 function updateResultBoard() {
   const board = $("result-board");
   if (lastRecord) {
@@ -700,7 +598,7 @@ function showResult({ won = false, quiet = false }: { won?: boolean; quiet?: boo
   }
   updateResultBoard();
 
-  if (!resultDialog.open) resultDialog.showModal();
+  if (!resultDialog.open) showDialog(resultDialog);
   if (quiet) return;
   if (celebrate) {
     sfx.playVictory();
@@ -764,13 +662,8 @@ function loadActiveGame(): boolean {
   updateUndoButton();
 
   // 重新載入已結束的局：照樣顯示結束畫面，但不再放音效與彩帶
-  if (isOver) {
-    if (isSenior) showResult({ quiet: true });
-    else showMessage("遊戲結束", score, false);
-  } else if (isWon && !hasContinued) {
-    if (isSenior) showResult({ won: true, quiet: true });
-    else showMessage("恭喜過關!", score, true);
-  }
+  if (isOver) showResult({ quiet: true });
+  else if (isWon && !hasContinued) showResult({ won: true, quiet: true });
   return true;
 }
 
@@ -807,7 +700,7 @@ function showInstall() {
   $("install-steps-other").classList.toggle("hidden", ios || canPrompt);
   $("install-now-btn").classList.toggle("hidden", !canPrompt);
   $("install-dismiss-btn").textContent = canPrompt ? "不再提示" : "知道了";
-  $<HTMLDialogElement>("install-dialog").showModal();
+  showDialog($<HTMLDialogElement>("install-dialog"));
 }
 
 async function installNow() {
@@ -822,9 +715,9 @@ function dismissInstall() {
   $<HTMLDialogElement>("install-dialog").close();
 }
 
-// 長輩模式、用手機、還沒放到桌面、也還沒按過「知道了」時，主動提示一次
+// 用手機、還沒放到桌面、也還沒按過「知道了」時，主動提示一次
 function maybeShowInstallHint() {
-  if (!isSenior || isStandalone() || storage.prefs.getInstallHintDismissed()) return;
+  if (isStandalone() || storage.prefs.getInstallHintDismissed()) return;
   if (!window.matchMedia("(pointer: coarse)").matches) return;
   setTimeout(() => {
     if (!document.querySelector("dialog[open]")) showInstall();
@@ -835,11 +728,11 @@ function maybeShowInstallHint() {
 function toggleRules() {
   const dialog = $<HTMLDialogElement>("rules-dialog");
   if (dialog.open) dialog.close();
-  else dialog.showModal();
+  else showDialog(dialog);
 }
 
 function confirmRestart() {
-  if (score > 0) $<HTMLDialogElement>("confirm-restart-dialog").showModal();
+  if (score > 0) showDialog($<HTMLDialogElement>("confirm-restart-dialog"));
   else restartGame();
 }
 
@@ -864,20 +757,11 @@ function initDialogDismissFallback() {
 const actions: Record<string, () => void> = {
   toggleMute,
   toggleTheme,
-  toggleSenior,
   toggleRules,
   confirmRestart,
   undo,
   clearLeaderboard,
   continueGame,
-  undoDialog: () => {
-    messageDialog.close();
-    undo();
-  },
-  restartGameDialog: () => {
-    messageDialog.close();
-    restartGame();
-  },
   openSettings,
   openRecords,
   openHello,
@@ -915,10 +799,6 @@ document.addEventListener("click", (e) => {
   if (size) changeGridSize(Number(size));
 });
 
-$<HTMLSelectElement>("grid-size-select").addEventListener("change", (e) => {
-  changeGridSize(Number.parseInt((e.target as HTMLSelectElement).value, 10));
-});
-
 const KEY_MAP: Record<string, Direction> = {
   ArrowUp: "up",
   ArrowDown: "down",
@@ -934,17 +814,14 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// 一般模式只在棋盤上滑動；長輩模式整個畫面都能滑，從按鈕上開始滑也算滑動（不會觸發按鈕）
+// 整個畫面都能滑；從按鈕上開始滑也算滑動（不會觸發按鈕）
 let touchStart: { x: number; y: number; onControl: boolean } | null = null;
 let suppressClickUntil = 0;
-const gameContainer = $("game-container");
 
 function swipeAllowedFrom(target: EventTarget | null): boolean {
   if (document.querySelector("dialog[open]")) return false;
   if (!(target instanceof Element)) return false;
-  if (target.closest("input, select, textarea")) return false;
-  if (gameContainer.contains(target)) return true;
-  return isSenior;
+  return !target.closest("input, select, textarea");
 }
 
 document.addEventListener(
@@ -1010,8 +887,6 @@ document.addEventListener("visibilitychange", () => {
 
 // ---------- 啟動 ----------
 initTheme();
-initSenior();
-updateMuteIcon(sfx.muted);
 initBoardBackground();
 loadHighScores();
 initDialogDismissFallback();
@@ -1020,9 +895,9 @@ renderGreeting();
 syncSettings();
 if (!loadActiveGame()) restartGame();
 
-// 長輩模式第一次打開先問稱呼（以前破紀錄時填過名字就不用再問），之後才提示放到桌面
+// 第一次打開先問稱呼（以前破紀錄時填過名字就不用再問），之後才提示放到桌面
 if (storage.prefs.getLastName()) storage.prefs.setNameAsked();
-if (isSenior && !storage.prefs.getNameAsked() && !document.querySelector("dialog[open]")) {
+if (!storage.prefs.getNameAsked() && !document.querySelector("dialog[open]")) {
   helloIsFirstRun = true;
   openHello();
 } else {

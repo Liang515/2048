@@ -52,12 +52,6 @@ export const prefs = {
   /** 'dark' | 'light' | null（null 代表跟隨系統） */
   getTheme: () => get("2048_theme"),
   setTheme: (v: "dark" | "light") => set("2048_theme", v),
-  /** null 代表還沒選過（第一次打開） */
-  getSenior: (): boolean | null => {
-    const v = get("2048_senior");
-    return v === null ? null : v === "true";
-  },
-  setSenior: (v: boolean) => set("2048_senior", String(v)),
   getLastName: () => get("2048_last_name") ?? "",
   setLastName: (v: string) => set("2048_last_name", v),
   /** 第一次打開時問過「要怎麼稱呼你」了沒（略過也算問過） */

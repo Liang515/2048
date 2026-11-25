@@ -349,17 +349,6 @@ html:has(body.senior-mode) {
   overscroll-behavior: none;
 }
 
-/* 簡單介面：長輩模式隱藏較少用的控制項，改由「設定」開啟 */
-.simple-only {
-  display: none !important;
-}
-body.senior-mode .simple-hide {
-  display: none !important;
-}
-body.senior-mode .simple-only {
-  display: inline-flex !important;
-}
-
 .result-primary.no-icon svg {
   display: none;
 }
@@ -406,8 +395,8 @@ body.senior-mode #game-container {
 /* 手機：棋盤用掉上方內容之後剩下的高度（長輩模式不能捲動，所以一定要放得下） */
 @media (max-width: 767px) {
   body.senior-mode #game-container {
-    width: min(94vw, calc(100dvh - 410px), 560px) !important;
-    height: min(94vw, calc(100dvh - 410px), 560px) !important;
+    width: min(94vw, calc(100dvh - 420px), 560px) !important;
+    height: min(94vw, calc(100dvh - 420px), 560px) !important;
   }
 }
 @media (max-width: 767px) and (max-height: 760px) {
@@ -715,6 +704,27 @@ body.senior-mode #undo-btn {
   }
 }
 
+/* 從主畫面打開（iOS 26 起狀態列下方有一段系統模糊）：頂部多留空白，問候語不被糊到。
+ * 底部提示文字在這裡隱藏（說明裡有），空出的高度剛好抵銷，棋盤大小不變 */
+@media (max-width: 767px) and (display-mode: standalone) {
+  body.senior-mode {
+    padding-top: 2.75rem !important;
+  }
+  body.senior-mode .mobile-hint {
+    display: none;
+  }
+  body.senior-mode #game-container {
+    width: min(94vw, calc(100dvh - 424px), 560px) !important;
+    height: min(94vw, calc(100dvh - 424px), 560px) !important;
+  }
+}
+@media (max-width: 767px) and (max-height: 760px) and (display-mode: standalone) {
+  body.senior-mode #game-container {
+    width: min(94vw, calc(100dvh - 334px), 560px) !important;
+    height: min(94vw, calc(100dvh - 334px), 560px) !important;
+  }
+}
+
 /* 我的紀錄對話框 */
 .records-board-title {
   margin: 0.5rem 0 0.25rem;
@@ -856,14 +866,6 @@ body.dark-mode .result-link {
     justify-content: center !important;
     gap: 1.5rem !important;
   }
-  .info-panel {
-    width: 160px !important;
-    gap: 0.5rem !important;
-  }
-  .info-panel h1 {
-    font-size: 2rem !important;
-    line-height: 1 !important;
-  }
   .info-panel button {
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
@@ -876,18 +878,8 @@ body.dark-mode .result-link {
     max-width: 500px;
     max-height: 500px;
   }
-  .records-row {
-    display: none !important;
-  }
   .mobile-hint {
     display: none !important;
-  }
-  /* 橫向時隱藏底部排行榜，顯示側邊排行榜 */
-  .mobile-leaderboard-wrapper {
-    display: none !important;
-  }
-  .desktop-leaderboard-wrapper {
-    display: block !important;
   }
   /* 長輩模式橫拿：左欄加寬、打卡卡片收成一行 */
   body.senior-mode .info-panel {
