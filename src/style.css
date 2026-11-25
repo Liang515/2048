@@ -280,11 +280,16 @@ body {
 }
 
 /* 原生 Dialog 樣式 */
-dialog {
-  border: none;
-  padding: 0;
-  background: transparent;
-  outline: none;
+/* 放在 base layer：Tailwind v4 的 utility class（bg-white、p-6…）才能蓋過這裡的重設 */
+@layer base {
+  dialog {
+    /* v4 preflight 把 margin 歸零，補回瀏覽器預設的置中 */
+    margin: auto;
+    border: none;
+    padding: 0;
+    background: transparent;
+    outline: none;
+  }
 }
 
 dialog::backdrop {
