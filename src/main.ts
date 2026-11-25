@@ -636,6 +636,32 @@ function updateLeaderboardUI(list: storage.LeaderboardEntry[]) {
       el.appendChild(li);
     });
   }
+  renderCardBoard(list);
+}
+
+/** 橫式版面打卡卡片裡的前三名（直向手機由 CSS 隱藏） */
+function renderCardBoard(list: storage.LeaderboardEntry[]) {
+  $("card-board-size").textContent = `${gridSize}×${gridSize}`;
+  const span = (className: string, text: string) => {
+    const el = document.createElement("span");
+    el.className = className;
+    el.textContent = text;
+    return el;
+  };
+  const top3 = list.slice(0, 3);
+  $("card-board-list").replaceChildren(
+    ...(top3.length > 0
+      ? top3.map((item, i) => {
+          const row = span("card-board-row", "");
+          row.append(
+            span("card-board-rank", String(i + 1)),
+            span("card-board-name", item.name || "匿名玩家"),
+            span("card-board-score", item.score.toLocaleString()),
+          );
+          return row;
+        })
+      : [span("card-board-empty", "還沒有紀錄，玩完一局就會出現在這裡")]),
+  );
 }
 
 // ---------- 存檔 ----------

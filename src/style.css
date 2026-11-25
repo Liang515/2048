@@ -876,6 +876,85 @@ body.senior-mode .main-layout {
   }
 }
 
+/* 打卡卡片裡的前三名：只在橫式兩欄、而且夠高的版面顯示（電腦、平板），把卡片多出的空白換成紀錄 */
+.card-board {
+  display: none;
+}
+/* 棋盤隨視窗高度縮小，左欄不能比棋盤高：越矮顯示越少名 */
+@media (min-width: 768px) and (min-height: 640px) {
+  body.senior-mode .card-board {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed var(--card-border);
+  }
+}
+.card-board-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--senior-muted);
+}
+.card-board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.card-board-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.card-board-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--bg-body);
+  color: var(--senior-muted);
+  font-family: var(--font-tiles);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+.card-board-row:nth-child(n + 2) {
+  display: none;
+}
+@media (min-height: 680px) {
+  .card-board-row:nth-child(2) {
+    display: flex;
+  }
+}
+@media (min-height: 720px) {
+  .card-board-row:nth-child(3) {
+    display: flex;
+  }
+}
+.card-board-row:first-child .card-board-rank {
+  background: #edc53a;
+  color: #4a3500;
+}
+.card-board-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-board-score {
+  font-family: var(--font-tiles);
+  font-weight: 900;
+}
+.card-board-empty {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--senior-muted);
+}
+
 /* 我的紀錄對話框 */
 .records-board-title {
   margin: 0.5rem 0 0.25rem;
