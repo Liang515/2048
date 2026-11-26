@@ -311,6 +311,15 @@ dialog[open]::backdrop {
   opacity: 1;
 }
 
+/* 手機上做成浮動卡片：四邊留 1rem（加上瀏海／Home 列的 safe area），太長就在卡片裡捲動。
+   不放進 layer，才能蓋過 w-full；max-w-md／max-w-sm 仍限制桌機寬度 */
+dialog {
+  width: calc(100% - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+  max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 /* 頁面從頂端開始排（最上面是標題列），手機的 body 只留左右與底部邊距 */
 body.senior-mode {
   justify-content: flex-start !important;
